@@ -1,39 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'parking_booking_page_copy.dart';
-import "main.dart";
+import 'main.dart';
 
-// void main() {
-//   runApp(
-//     // MultiProvider(
-//     // providers: [
-//     //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
-//     // ],
-//     // child:
-//     // ChangeNotifierProvider(
-//     //   create: (context) => ParkingProvider(),
-//     //   child:
-//     MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       home: ParkingSlotsScreen(
-//         // parkingID: "downtown_parking",
-//         bookDate: DateTime(2025, 1, 30, 11, 0),
-//         bookDuration: {'hour': 0, 'min': 30},
-//       ),
-//       // ),
-//     ),
-//     // ),
-//   );
-// }
+class ParkingSlot {
+  final String parkingID;
+  final Map<String, dynamic> area;
+  final String number;
 
-String entrySlot = 'A-1';
-String exitSlot = 'C-2';
-// Static set of reserved slots
-Set<String> reservedSlots = {'A-1', 'B-4'};
+  ParkingSlot({
+    required this.parkingID,
+    required this.area,
+    required this.number,
+  });
+}
+
+class ParkingProvider with ChangeNotifier {
+  List<ParkingSlot> _slots = [];
+  String _parkID = '';
+
+  List<ParkingSlot> get slots => _slots;
+  String get parkID => _parkID;
+
+  void setParkID(String parkID) {
+    _parkID = parkID;
+    notifyListeners();
+  }
+
+  // Fetch slots from Firestore
+  Future<void> fetchSlots(String parkingID) async {
+    final firestore = FirebaseFirestore.instance;
+    final snapshot = await firestore
+        .collection('slots')
+        .where('parking_id', isEqualTo: parkingID)
+        .get();
+
+    _slots = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return ParkingSlot(
+        parkingID: data['parking_id'],
+        area: data['area'], // Ensure 'area' is a Map<String, dynamic>
+        number: data['number'],
+      );
+    }).toList();
+
+    notifyListeners();
+  }
+}
 
 class ParkingSlotsScreen extends StatelessWidget {
-  // final List<ParkingSlot> parkingLoc;
-  // final String parkingID;
   final DateTime bookDate;
   final Map<String, int> bookDuration;
 
@@ -159,31 +176,17 @@ class _buildGridViewState extends State<buildGridView> {
   @override
   Widget build(BuildContext context) {
     final parkingProvider = Provider.of<ParkingProvider>(context);
+
+    // Fetch slots if not already fetched
     if (parkingProvider.slots.isEmpty) {
-      parkingProvider.slots = [
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 500, 'height': 200},
-            number: "G1"),
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 400, 'height': 300},
-            number: "A2"),
-        ParkingSlot(
-            parkingID: 'feer',
-            area: {'width': 300, 'height': 500},
-            number: "B1"),
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 600, 'height': 100},
-            number: "D1"),
-      ];
+      parkingProvider.fetchSlots(parkingProvider.parkID);
     }
 
+    // Filter bookings for the selected parking place
     var selectedBookings =
         bookings.where((item) => item.parkingID == parkingProvider.parkID);
 
-    List<String> reservedSlots = []; //contains ID
+    List<String> reservedSlots = []; // Contains IDs of reserved slots
 
     DateTime requestedStart = widget.bookDate;
     DateTime requestedEnd = requestedStart.add(Duration(
@@ -191,6 +194,7 @@ class _buildGridViewState extends State<buildGridView> {
       minutes: widget.bookDuration['min'] ?? 0,
     ));
 
+    // Check for overlapping bookings
     for (var booking in selectedBookings) {
       DateTime bookingStart = booking.date;
       DateTime bookingEnd = bookingStart.add(Duration(
@@ -200,12 +204,6 @@ class _buildGridViewState extends State<buildGridView> {
 
       bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
           requestedEnd.isAfter(bookingStart);
-      print(requestedStart);
-      print(requestedEnd);
-      print('----------');
-      print(bookingStart);
-      print(bookingEnd);
-      print('----------');
 
       if (isOverlapping) {
         ParkingSlot? slot = parkingProvider.slots.firstWhere(
@@ -219,6 +217,7 @@ class _buildGridViewState extends State<buildGridView> {
         }
       }
     }
+
     print(reservedSlots);
 
     return GridView.builder(
@@ -242,10 +241,7 @@ class _buildGridViewState extends State<buildGridView> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => ParkingBookingPage())
-                      // builder: (context) => ParkingBookingPage(
-                      //     targetSlot: slot, slotID: index)),
-                      );
+                          builder: (context) => ParkingBookingPage()));
                 },
           child: Container(
             height: 120,
@@ -299,33 +295,5 @@ class _buildGridViewState extends State<buildGridView> {
         );
       },
     );
-  }
-}
-
-class DashedLinePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black
-      ..strokeWidth = 4
-      ..style = PaintingStyle.stroke;
-
-    double dashHeight = 90;
-    double dashSpace = 50;
-    double startY = 0;
-
-    // Draw only the center dashed line
-    double centerX = size.width / 2;
-
-    while (startY < size.height) {
-      canvas.drawLine(
-          Offset(centerX, startY), Offset(centerX, startY + dashHeight), paint);
-      startY += dashHeight + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
   }
 }
