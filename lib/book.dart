@@ -43,6 +43,8 @@ class ParkingSlotsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
+    print(bookDate.hour);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Parking Slots"),
@@ -156,6 +158,75 @@ class _buildGridViewState extends State<buildGridView> {
     return aspectRatio;
   }
 
+  void _showBookingDetails(
+      BuildContext context,
+      String slotNumber,
+      Map<String, int> selectedDuration,
+      DateTime selectedDate,
+      ParkingProvider provider) {
+    // int selectedHours = int.tryParse(hourController.text) ?? 0;
+    // int selectedMinutes = int.tryParse(minuteController.text) ?? 0;
+    String formattedDuration =
+        '${selectedDuration['hour']} hours ${selectedDuration['min']} minutes';
+    String formattedDate =
+        '${selectedDate.month}-${selectedDate.day}-${selectedDate.year} ${selectedDate.hour}:${selectedDate.minute}';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Slot Booking'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Image.asset('assets/images/image.gif', height: 120, width: 120
+              // Gif(
+              // image: AssetImage(
+              //   "images/img.gif",
+              // ),
+
+              // ),
+              // SizedBox(height: 16),
+              Text('Start Datetime: $formattedDate'),
+              SizedBox(height: 16),
+              Text('Duration: $formattedDuration'),
+              SizedBox(height: 16),
+              Text('Slot Number: $slotNumber'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Perform confirmation action here
+                // Provider.of<ParkingProvider>(context, listen: true)
+                //     .addNewBooked(ParkBooking(
+                //         parkingID:
+                //             Provider.of<ParkingProvider>(context, listen: true)
+                //                 .parkID,
+                //         slotNumber: slotNumber,
+                //         date: selectedDate,
+                //         duration: selectedDuration,
+                //         userID: "temp"));
+                Navigator.of(context).pop();
+                // ADD TO DB
+                print("Confirmed!");
+                // THEN RETURN TO MAIN
+              },
+              child: Text("Confirm"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final parkingProvider = Provider.of<ParkingProvider>(context);
@@ -170,20 +241,20 @@ class _buildGridViewState extends State<buildGridView> {
             area: {'width': 400, 'height': 300},
             number: "A2"),
         ParkingSlot(
-            parkingID: 'feer',
+            parkingID: 'downtown_parking',
             area: {'width': 300, 'height': 500},
             number: "B1"),
         ParkingSlot(
             parkingID: 'downtown_parking',
             area: {'width': 600, 'height': 100},
-            number: "D1"),
+            number: "C1"),
       ];
     }
 
+    List<String> reservedSlots = []; //contains ID
+
     var selectedBookings =
         bookings.where((item) => item.parkingID == parkingProvider.parkID);
-
-    List<String> reservedSlots = []; //contains ID
 
     DateTime requestedStart = widget.bookDate;
     DateTime requestedEnd = requestedStart.add(Duration(
@@ -200,26 +271,12 @@ class _buildGridViewState extends State<buildGridView> {
 
       bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
           requestedEnd.isAfter(bookingStart);
-      print(requestedStart);
-      print(requestedEnd);
-      print('----------');
-      print(bookingStart);
-      print(bookingEnd);
-      print('----------');
 
       if (isOverlapping) {
-        ParkingSlot? slot = parkingProvider.slots.firstWhere(
-            (slot) =>
-                slot.parkingID == parkingProvider.parkID &&
-                slot.number == booking.slotNumber,
-            orElse: () => ParkingSlot(parkingID: '', area: {}, number: ''));
-
-        if (slot != null && !reservedSlots.contains(slot.number)) {
-          reservedSlots.add(slot.number);
-        }
+        reservedSlots.add(booking.slotNumber);
       }
     }
-    print(reservedSlots);
+    if (selectedBookings.isEmpty) return Text("No slots available");
 
     return GridView.builder(
       physics: BouncingScrollPhysics(),
@@ -239,13 +296,15 @@ class _buildGridViewState extends State<buildGridView> {
           onTap: isReserved
               ? null
               : () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ParkingBookingPage())
-                      // builder: (context) => ParkingBookingPage(
-                      //     targetSlot: slot, slotID: index)),
-                      );
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) => ParkingBookingPage())
+                  // builder: (context) => ParkingBookingPage(
+                  //     targetSlot: slot, slotID: index)),
+                  // );
+                  _showBookingDetails(context, slot.number, widget.bookDuration,
+                      widget.bookDate, parkingProvider);
                 },
           child: Container(
             height: 120,
@@ -275,12 +334,12 @@ class _buildGridViewState extends State<buildGridView> {
                             TextStyle(color: Color.fromRGBO(103, 83, 164, 1))),
                     if (isReserved) ...[
                       SizedBox(width: 10),
-                      Text(
-                          "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: getResponsiveFontSize(context, 0.03),
-                          )),
+                      // Text(
+                      // "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
+                      // style: TextStyle(
+                      //   color: Colors.black,
+                      //   fontSize: getResponsiveFontSize(context, 0.03),
+                      // )),
                     ]
                   ],
                 ),

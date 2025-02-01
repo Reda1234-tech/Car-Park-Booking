@@ -69,7 +69,7 @@ List<ParkBooking> bookings = [
       date: DateTime(2025, 2, 4, 11, 0),
       duration: {'hour': 1, 'min': 30},
       parkingID: "downtown_parking",
-      slotNumber: "A2",
+      slotNumber: "A1",
       userID: "user456"),
   ParkBooking(
       date: DateTime(2025, 2, 3, 12, 0),
@@ -128,6 +128,11 @@ class ParkingProvider extends ChangeNotifier {
 
   void setBookedSlots(List<ParkBooking> newBookedSlots) {
     bookedSlots = newBookedSlots;
+    notifyListeners();
+  }
+
+  void addNewBooked(ParkBooking newBookedSlot) {
+    bookedSlots.add(newBookedSlot);
     notifyListeners();
   }
 

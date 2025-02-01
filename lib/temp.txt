@@ -272,3 +272,15 @@ class DashedBorderPainter extends CustomPainter {
               //     ],
               //   ),
               // ),
+
+
+          // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => ParkingSlotsScreen(
+                //               bookDate: selectedDate,
+                //               bookDuration: {
+                //                 'hour': selectedHours,
+                //                 'min': selectedMinutes
+                //               })),
+                // );

@@ -116,7 +116,7 @@ class _MapScreenState extends State<MapScreen> {
             }
 
             return {
-              "parkingName": data['name'],
+              "parkingID": data['parking_id'],
               "parkingLoc": LatLng(lat, long),
             };
           })
@@ -166,11 +166,11 @@ class _MapScreenState extends State<MapScreen> {
 
   List<Map<String, dynamic>> parkingPlaces = [
     {
-      "parkingName": "downtown_parking",
+      "parkingID": "downtown_parking",
       "parkingLoc": LatLng(28.381887070530755, 36.48516313513801),
     },
     {
-      "parkingName": "feer",
+      "parkingID": "feer",
       "parkingLoc": LatLng(28.38430764818877, 36.48233091840871),
     },
   ];
@@ -179,12 +179,12 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     markers = parkingPlaces.where((item) => item != null).map((item) {
       return Marker(
-        markerId: MarkerId(item['parkingName']),
+        markerId: MarkerId(item['parkingID']),
         position: item['parkingLoc'],
         onTap: () {
           List<ParkingSlot> selectedSlots = [];
           var selectedParking = parkingLoc.firstWhere(
-            (p) => p["parkName"] == item["parkingName"],
+            (p) => p["parkName"] == item["parkingID"],
             orElse: () => {},
           );
 
@@ -197,7 +197,7 @@ class _MapScreenState extends State<MapScreen> {
               .setParkingSlots(selectedSlots);
 
           Provider.of<ParkingProvider>(context, listen: false)
-              .setParkingID(item["parkingName"]);
+              .setParkingID(item["parkingID"]);
 
           Navigator.push(
             context,
