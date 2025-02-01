@@ -6,6 +6,10 @@ import 'dart:async';
 import 'book.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
+// import 'package:geocoding/geocoding.dart';
+// import 'package:flutter_google_places/flutter_google_places.dart';
+// import 'package:google_maps_webservice/places.dart';
+
 // import 'package:flutter/scheduler.dart';
 
 // void main() {
@@ -60,6 +64,10 @@ List<Map<String, dynamic>> parkingLoc = [
   }
 ];
 
+const kGoogleApiKey = "AIzaSyAIb-HJSutTY63dIxqAVYZ9dAl6fE-BsQA";
+
+// GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+
 class ParkingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -76,7 +84,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  // GoogleMapController? _controller;
+  GoogleMapController? _controller;
   Set<Marker> markers = Set();
 
   final double _latitude = 28.39412359758817;
@@ -173,6 +181,138 @@ class _MapScreenState extends State<MapScreen> {
     },
     */
   ];
+/*
+  Future<void> _searchLocation(String query) async {
+    if (query.isNotEmpty) {
+      try {
+        // Attempt to get the location from the address
+        List<Location> locations = await locationFromAddress(query);
+
+        // If no results found, suggest nearby or fallback to default location
+        if (locations.isNotEmpty) {
+          // _controller!.animateCamera(
+          //   CameraUpdate.newLatLng(
+          //     LatLng(locations[0].latitude, locations[0].longitude),
+          //   ),
+          // );
+        } else {
+          // No result found: Suggest a nearby location or default
+          print(
+              'No exact match found for $query. Suggesting a nearby location.');
+
+          // Fallback to a predefined location (e.g., user's current location or a default city)
+          // Example: using a default location like "New York"
+          // List<Location> fallbackLocation =
+          //     await locationFromAddress("New York, NY");
+
+          List<Placemark> placemarks =
+              await placemarkFromCoordinates(52.2165157, 6.9437819);
+
+          // if (fallbackLocation.isNotEmpty) {
+          // _controller!.animateCamera(
+          //   CameraUpdate.newLatLng(
+          //     LatLng(fallbackLocation[0].latitude,
+          //         fallbackLocation[0].longitude),
+          //   ),
+          // );
+          // } else {
+          //   print('No fallback location found either.');
+          // }
+        }
+      } catch (e) {
+        // Handle errors such as network issues, API failures
+        print('Error during geocoding: $e');
+
+        // Fallback action: try using a default location if an error occurs
+        // List<Location> fallbackLocation =
+        //     await locationFromAddress("New York, NY");
+        List<Placemark> placemarks =
+            await placemarkFromCoordinates(52.2165157, 6.9437819);
+
+        // if (fallbackLocation.isNotEmpty) {
+        //   _controller!.animateCamera(
+        //     CameraUpdate.newLatLng(
+        //       LatLng(
+        //           fallbackLocation[0].latitude, fallbackLocation[0].longitude),
+        //     ),
+        //   );
+        // }
+      }
+    } else {
+      print('Search query is empty. Suggesting default location.');
+      // Default to a predefined location when the query is empty
+      // List<Location> defaultLocation =
+      //     await locationFromAddress("San Francisco, CA");
+
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(52.2165157, 6.9437819);
+
+      // if (defaultLocation.isNotEmpty) {
+      //   _controller!.animateCamera(
+      //     CameraUpdate.newLatLng(
+      //       LatLng(defaultLocation[0].latitude, defaultLocation[0].longitude),
+      //     ),
+      //   );
+      // }
+    }
+  }
+*/
+/*
+  // Method to search location by address
+  Future<void> _searchLocation(String query) async {
+    try {
+      // Call locationFromAddress to get coordinates of the query address
+      List<Location> locations =
+          await GeocodingPlatform.instance!.locationFromAddress(query);
+
+      if (locations.isNotEmpty) {
+        // If location found, animate the camera to the location
+        _controller!.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(locations[0].latitude, locations[0].longitude),
+          ),
+        );
+      } else {
+        print('No location found for the query: $query');
+      }
+    } catch (e) {
+      print('Error during geocoding: $e');
+
+      // Fallback to a predefined location (e.g., New York) if error occurs
+      List<Location> fallbackLocation =
+          await locationFromAddress("New York, NY");
+
+      if (fallbackLocation.isNotEmpty) {
+        _controller!.animateCamera(
+          CameraUpdate.newLatLng(
+            LatLng(fallbackLocation[0].latitude, fallbackLocation[0].longitude),
+          ),
+        );
+      }
+    }
+  }
+
+  void _onSearchButtonPressed() {
+    _searchLocation("San Francisco, CA");
+  }
+*/
+/*
+Future<Null> displayPrediction(Prediction p) async {
+    if (p != null) {
+      PlacesDetailsResponse detail =
+      await _places.getDetailsByPlaceId(p.placeId!);
+
+      var placeId = p.placeId;
+      double lat = detail.result.geometry!.location.lat;
+      double lng = detail.result.geometry!.location.lng;
+
+      var address = await Geocoder.local.findAddressesFromQuery(p.description);
+
+      print(lat);
+      print(lng);
+    }
+  }
+  */
 
   @override
   Widget build(BuildContext context) {
@@ -235,30 +375,62 @@ class _MapScreenState extends State<MapScreen> {
           Expanded(
             // height: 500,
             // width: 500,
-            child: Container(
-              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-              child: Consumer(builder: (context, provider, child) {
-                return Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.all(
-                    Radius.circular(50),
-                  )),
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: LatLng(_latitude, _longitude), // Center of campus
-                      zoom: 15, // Default zoom level
-                    ),
-                    buildingsEnabled: true,
-                    compassEnabled: true,
-                    mapType: MapType.hybrid,
-                    markers: markers,
-                    onMapCreated: (GoogleMapController controller) {
-                      // _controller = controller;
-                    },
-                    myLocationButtonEnabled: true,
-                  ),
-                );
-              }),
+            child: Stack(
+              children: [
+                Container(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: Consumer(builder: (context, provider, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.all(
+                        Radius.circular(50),
+                      )),
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target:
+                              LatLng(_latitude, _longitude), // Center of campus
+                          zoom: 15, // Default zoom level
+                        ),
+                        buildingsEnabled: true,
+                        compassEnabled: true,
+                        mapType: MapType.hybrid,
+                        markers: markers,
+                        onMapCreated: (GoogleMapController controller) {
+                          _controller = controller;
+                        },
+                        myLocationButtonEnabled: true,
+                      ),
+                    );
+                  }),
+                ),
+                // ElevatedButton(
+                // onPressed: () async {
+                //   Prediction? p = await PlacesAutocomplete.show(
+                //       context: context, apiKey: kGoogleApiKey);
+                //   displayPrediction(p);
+                // },
+                // onPressed: _onSearchButtonPressed,
+                //   child: Text("click"),
+                // ),
+                // Padding(
+                //   padding: const EdgeInsets.all(10.0),
+                //   child: SizedBox(
+                //     width: 300,
+                //     child: TextField(
+                //       onChanged: (query) {
+                //         // _searchLocation(query);
+                //       },
+                //       // style: ,
+
+                //       decoration: InputDecoration(
+                //         hintText: 'Search location',
+                //         prefixIcon: Icon(Icons.search),
+                //         border: OutlineInputBorder(),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+              ],
             ),
           ),
           SizedBox(

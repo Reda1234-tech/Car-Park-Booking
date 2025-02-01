@@ -22,22 +22,6 @@ import "main.dart";
 //   );
 // }
 
-class ParkingSlot {
-  final String id;
-  final String area;
-  bool isBooked;
-  int hours;
-  int minutes;
-
-  ParkingSlot({
-    required this.id,
-    required this.area,
-    this.isBooked = false,
-    this.hours = 0,
-    this.minutes = 0,
-  });
-}
-
 String entrySlot = 'A-1';
 String exitSlot = 'C-2';
 // Static set of reserved slots

@@ -29,11 +29,11 @@ class SplashPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Display the image with responsive size (larger size)
-            Image.asset(
-              'assets/images/img2.png',
-              height: imageSize,
-              width: imageSize,
-            ),
+            // Image.asset(
+            //   'assets/images/img2.png',
+            //   height: imageSize,
+            //   width: imageSize,
+            // ),
             SizedBox(height: 20),
             Text(
               'Easy Parking',
@@ -50,6 +50,23 @@ class SplashPage extends StatelessWidget {
   }
 }
 
+class ParkingSlot {
+  final String id;
+  final String area;
+  bool isBooked;
+  int hours;
+  int minutes;
+  String startDate;
+
+  ParkingSlot(
+      {required this.id,
+      required this.area,
+      this.isBooked = false,
+      this.hours = 0,
+      this.minutes = 0,
+      this.startDate = ""});
+}
+
 class ParkingProvider extends ChangeNotifier {
   List<ParkingSlot> slots = [];
 
@@ -60,12 +77,13 @@ class ParkingProvider extends ChangeNotifier {
   }
 
   // Book a slot
-  void bookSlot(String id, int hours, int minutes) {
+  void bookSlot(String id, int hours, int minutes, String date) {
     int index = slots.indexWhere((slot) => slot.id == id);
     if (index != -1) {
       slots[index].isBooked = true;
       slots[index].hours = hours;
       slots[index].minutes = minutes;
+      slots[index].startDate = date;
       notifyListeners();
     }
   }

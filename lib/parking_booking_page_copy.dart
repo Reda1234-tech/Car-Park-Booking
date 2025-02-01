@@ -120,7 +120,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset('assets/images/image.gif', height: 120, width: 120
+              Image.asset('assets/image.gif', height: 120, width: 120
                   // Gif(
                   // image: AssetImage(
                   //   "images/img.gif",
@@ -353,11 +353,13 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                               int selectedMinutes =
                                   int.tryParse(minuteController.text) ?? 0;
 
-                              parkProvider.bookSlot(widget.targetSlot.id,
-                                  selectedHours, selectedMinutes);
+                              String selectedDate = "";
+                              // int.tryParse(minuteController.text) ?? 0;
 
-                              _showBookingDetails(
-                                  context); // Show booking details popup
+                              parkProvider.bookSlot(widget.targetSlot.id,
+                                  selectedHours, selectedMinutes, selectedDate);
+
+                              _showBookingDetails(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(
