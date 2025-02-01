@@ -6,6 +6,8 @@ import 'dart:async';
 import 'parking_booking_page_copy.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 // import 'package:geocoding/geocoding.dart';
 // import 'package:flutter_google_places/flutter_google_places.dart';
 // import 'package:google_maps_webservice/places.dart';
@@ -93,6 +95,35 @@ class _MapScreenState extends State<MapScreen> {
   void initState() {
     super.initState();
     // _loadParkingSpots();
+    _fetchParkingPlaces();
+  }
+
+  Future<void> _fetchParkingPlaces() async {
+    final firestore = FirebaseFirestore.instance;
+    final snapshot = await firestore.collection('parking_places').get();
+    setState(() {
+      parkingPlaces = snapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            print('Fetched data: $data'); // Print fetched data
+            final location = data['location'] as Map<String, dynamic>?;
+            final lat = location?['lat'] as double?;
+            final long = location?['long'] as double?;
+
+            if (lat == null || long == null) {
+              print('Invalid location data for ${data['name']}');
+              return null; // Return null for invalid entries
+            }
+
+            return {
+              "parkingName": data['name'],
+              "parkingLoc": LatLng(lat, long),
+            };
+          })
+          .where((item) => item != null)
+          .toList()
+          .cast<Map<String, dynamic>>(); // Cast to non-nullable list
+    });
   }
 
   // Function to fetch nearby parking from Google Places API
@@ -146,7 +177,7 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
-    markers = parkingPlaces.map((item) {
+    markers = parkingPlaces.where((item) => item != null).map((item) {
       return Marker(
         markerId: MarkerId(item['parkingName']),
         position: item['parkingLoc'],
@@ -214,7 +245,7 @@ class _MapScreenState extends State<MapScreen> {
                         initialCameraPosition: CameraPosition(
                           target:
                               LatLng(_latitude, _longitude), // Center of campus
-                          zoom: 15, // Default zoom level
+                          zoom: 12, // Default zoom level
                         ),
                         buildingsEnabled: true,
                         compassEnabled: true,

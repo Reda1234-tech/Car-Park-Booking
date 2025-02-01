@@ -3,28 +3,28 @@ import 'package:provider/provider.dart';
 import 'parking_booking_page_copy.dart';
 import "main.dart";
 
-void main() {
-  runApp(
-    // MultiProvider(
-    // providers: [
-    //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
-    // ],
-    // child:
-    // ChangeNotifierProvider(
-    //   create: (context) => ParkingProvider(),
-    //   child:
-    MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: ParkingSlotsScreen(
-        // parkingID: "downtown_parking",
-        bookDate: DateTime(2025, 1, 30, 11, 0),
-        bookDuration: {'hour': 0, 'min': 30},
-      ),
-      // ),
-    ),
-    // ),
-  );
-}
+// void main() {
+//   runApp(
+//     // MultiProvider(
+//     // providers: [
+//     //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
+//     // ],
+//     // child:
+//     // ChangeNotifierProvider(
+//     //   create: (context) => ParkingProvider(),
+//     //   child:
+//     MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       home: ParkingSlotsScreen(
+//         // parkingID: "downtown_parking",
+//         bookDate: DateTime(2025, 1, 30, 11, 0),
+//         bookDuration: {'hour': 0, 'min': 30},
+//       ),
+//       // ),
+//     ),
+//     // ),
+//   );
+// }
 
 String entrySlot = 'A-1';
 String exitSlot = 'C-2';

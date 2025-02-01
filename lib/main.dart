@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'maps.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
 class SplashPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -146,7 +149,11 @@ class ParkingProvider extends ChangeNotifier {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     ChangeNotifierProvider(
       create: (context) => ParkingProvider(),
