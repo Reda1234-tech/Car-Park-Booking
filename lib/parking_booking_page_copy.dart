@@ -1,10 +1,11 @@
+import 'package:car_park_booking/maps.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter_application_1/maps.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-// import './parking_slots_copy.dart';
 import 'book.dart';
 import 'main.dart';
+import 'package:flutter/services.dart';
+
 // import 'package:gif/gif.dart';
 
 // void main() {
@@ -22,10 +23,10 @@ import 'main.dart';
 // }
 
 class ParkingBookingPage extends StatefulWidget {
-  final int slotID;
-  late ParkingSlot targetSlot;
+  // final int slotID;
+  // late ParkingSlot targetSlot;
 
-  ParkingBookingPage({super.key, required this.targetSlot, required this.slotID});
+  // ParkingBookingPage({required this.targetSlot, required this.slotID});
 
   @override
   _ParkingBookingPageState createState() => _ParkingBookingPageState();
@@ -34,23 +35,27 @@ class ParkingBookingPage extends StatefulWidget {
 class _ParkingBookingPageState extends State<ParkingBookingPage> {
   // late GifController controller;
 
-  @override
   void initState() {
     super.initState();
     // controller = GifController(vsync: this);
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay(hour: 11, minute: 10);
-  TextEditingController hourController = TextEditingController(text: "00");
-  TextEditingController minuteController = TextEditingController(text: "00");
+  TimeOfDay selectedTime = TimeOfDay(hour: 11, minute: 00);
+  TextEditingController hourController = TextEditingController();
+  TextEditingController minuteController = TextEditingController();
   String? errorMessage;
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2024, 1, 1),
+      firstDate: selectedDate,
       lastDate: DateTime(2030, 12, 31),
     );
     if (picked != null && picked != selectedDate) {
@@ -133,8 +138,8 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
               SizedBox(height: 16),
               // Display an animated GIF for the parking slot
 
-              SizedBox(height: 8),
-              Text('Slot: ${widget.targetSlot.id}'),
+              // SizedBox(height: 8),
+              // Text('Slot: ${widget.targetSlot.id}'),
             ],
           ),
           actions: <Widget>[
@@ -144,7 +149,13 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                 // Navigator.of(context).pop();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ParkingSlotsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => ParkingSlotsScreen(
+                              bookDate: selectedDate,
+                              bookDuration: {
+                                'hour': selectedHours,
+                                'min': selectedMinutes
+                              })),
                 );
               },
             ),
@@ -156,11 +167,9 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
 
   @override
   Widget build(BuildContext context) {
-    // final parkingProvider = Provider.of<ParkingProvider>(context, listen: true);
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book parking detail'),
+        title: Text('Book Parking Details'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -173,28 +182,28 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Spot name field
-              Text("Spot name",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              // Text("Spot name",
+              //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              // SizedBox(height: 8),
+              // Container(
+              //   width: 50,
+              //   padding: EdgeInsets.all(12),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(8),
+              //     color: Color.fromRGBO(103, 83, 164, 1),
+              //   ),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.start,
+              //     children: [
+              //       // Text(
+              //       //   // widget.slotID.toString(), // Display the spot name
+              //       //   // widget.targetSlot.id, // Display the spot name
+              //       //   style: TextStyle(fontSize: 16, color: Colors.white),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
               SizedBox(height: 8),
-              Container(
-                width: 50,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Color.fromRGBO(103, 83, 164, 1),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      // widget.slotID.toString(), // Display the spot name
-                      widget.targetSlot.id, // Display the spot name
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16),
 
               // Date selection
               Text("Select date",
@@ -231,16 +240,12 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                 ),
                 child: Column(
                   children: [
-                    Text("Enter time",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(
                           children: [
-                            SizedBox(
+                            Container(
                               width: 60,
                               child: TextFormField(
                                 controller: hourController,
@@ -250,25 +255,31 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                                   border: OutlineInputBorder(),
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: 8),
+                                  hintText: "HH",
                                 ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter
+                                      .digitsOnly, // Allow only numbers
+                                  LengthLimitingTextInputFormatter(2),
+                                  _HourInputFormatter(), // Custom restriction (0-23)
+                                ],
                                 onChanged: _validateHour,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text("H", style: TextStyle(fontSize: 16)),
                           ],
                         ),
                         SizedBox(width: 16), // Adjust spacing
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 30.0),
-                          child: Text(":",
-                              style: TextStyle(
-                                  fontSize: 24, fontWeight: FontWeight.bold)),
-                        ),
+                        // Padding(
+                        // padding: const EdgeInsets.only(bottom: 30.0),
+                        // child:
+                        Text(":",
+                            style: TextStyle(
+                                fontSize: 24, fontWeight: FontWeight.bold)),
+                        // ),
                         SizedBox(width: 16), // Adjust spacing
                         Column(
                           children: [
-                            SizedBox(
+                            Container(
                               width: 60,
                               child: TextFormField(
                                 controller: minuteController,
@@ -278,17 +289,21 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                                   border: OutlineInputBorder(),
                                   contentPadding:
                                       EdgeInsets.symmetric(horizontal: 8),
+                                  hintText: "MM",
                                 ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(2),
+                                  _MinuteInputFormatter(), // Custom restriction (0-59)
+                                ],
                                 onChanged: _validateMinute,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Text("M", style: TextStyle(fontSize: 16)),
                           ],
                         ),
                       ],
                     ),
-                    SizedBox(height: 8),
+                    SizedBox(height: 4),
                     if (errorMessage != null)
                       Text(
                         errorMessage!,
@@ -328,11 +343,10 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Navigator.pushReplacement(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //       builder: (context) => ParkingSlotsScreen()),
-                        // );
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => MapScreen()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color.fromRGBO(103, 83, 164, 1),
@@ -354,18 +368,32 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                               int selectedMinutes =
                                   int.tryParse(minuteController.text) ?? 0;
 
-                              parkProvider.bookSlot(widget.targetSlot.id,
-                                  selectedHours, selectedMinutes);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ParkingSlotsScreen(
+                                            bookDate: selectedDate,
+                                            bookDuration: {
+                                              'hour': selectedHours,
+                                              'min': selectedMinutes
+                                            })),
+                              );
 
-                              _showBookingDetails(
-                                  context); // Show booking details popup
+                              // parkProvider.bookSlot(
+                              //   widget.targetSlot.id,
+                              //   selectedHours,
+                              //   selectedMinutes,
+                              //   DateFormat('yyyy-MM-dd').format(
+                              //       selectedDate), // Format selectedDate as a string
+                              // );
+                              // _showBookingDetails(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(103, 83, 164, 1),
                             minimumSize: Size(double.infinity, 50),
                           ),
-                          child: Text("Reserve",
+                          child: Text("Choose Slot",
                               style:
                                   TextStyle(fontSize: 16, color: Colors.white)),
                         );
@@ -380,5 +408,35 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
         ),
       ),
     );
+  }
+}
+
+// Custom formatter to ensure valid hour input (0-23)
+class _HourInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue;
+
+    int? value = int.tryParse(newValue.text);
+    if (value == null || value < 0 || value > 23) {
+      return oldValue;
+    }
+    return newValue;
+  }
+}
+
+// Custom formatter to ensure valid minute input (0-59)
+class _MinuteInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) return newValue;
+
+    int? value = int.tryParse(newValue.text);
+    if (value == null || value < 0 || value > 59) {
+      return oldValue;
+    }
+    return newValue;
   }
 }

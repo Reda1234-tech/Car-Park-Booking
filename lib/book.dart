@@ -10,49 +10,39 @@ import "main.dart";
 //     //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
 //     // ],
 //     // child:
+//     // ChangeNotifierProvider(
+//     //   create: (context) => ParkingProvider(),
+//     //   child:
 //     MaterialApp(
 //       debugShowCheckedModeBanner: false,
-//       home: ParkingSlotsScreen(parkingName: "test", parkingLoc: [
-//         ParkingSlot(id: 'A-1', area: 'Small'),
-//         ParkingSlot(id: 'A-2', area: 'Medium'),
-//         ParkingSlot(id: 'A-6', area: 'Large'),
-//       ]),
+//       home: ParkingSlotsScreen(
+//         // parkingID: "downtown_parking",
+//         bookDate: DateTime(2025, 1, 30, 11, 0),
+//         bookDuration: {'hour': 0, 'min': 30},
+//       ),
 //       // ),
 //     ),
+//     // ),
 //   );
 // }
-
-class ParkingSlot {
-  final String id;
-  final String area;
-  bool isBooked;
-  int hours;
-  int minutes;
-
-  ParkingSlot({
-    required this.id,
-    required this.area,
-    this.isBooked = false,
-    this.hours = 0,
-    this.minutes = 0,
-  });
-}
 
 String entrySlot = 'A-1';
 String exitSlot = 'C-2';
 // Static set of reserved slots
-Set<String> reservedSlots = {'A-3', 'B-4'};
+Set<String> reservedSlots = {'A-1', 'B-4'};
 
 class ParkingSlotsScreen extends StatelessWidget {
-  const ParkingSlotsScreen({super.key});
-
   // final List<ParkingSlot> parkingLoc;
-  // final String parkingName;
+  // final String parkingID;
+  final DateTime bookDate;
+  final Map<String, int> bookDuration;
 
-  // ParkingSlotsScreen({required this.parkingName, required this.parkingLoc});
+  ParkingSlotsScreen({required this.bookDate, required this.bookDuration});
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Parking Slots"),
@@ -66,19 +56,26 @@ class ParkingSlotsScreen extends StatelessWidget {
           Text("🚗 Parking Area 🚗",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
-          Text("ENTRY",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.yellow.shade800)),
-          Text("\u2B9F",
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.yellow.shade800)),
+          if (screenWidth < 600)
+            Text("ENTRY",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.yellow.shade800)),
+          if (screenWidth < 600)
+            Text("\u2B9F",
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.yellow.shade800)),
           Expanded(
             child: Stack(
-              children: [buildGridView()],
+              children: [
+                buildGridView(
+                  bookDate: bookDate,
+                  bookDuration: bookDuration,
+                )
+              ],
             ),
           )
         ],
@@ -88,7 +85,11 @@ class ParkingSlotsScreen extends StatelessWidget {
 }
 
 class buildGridView extends StatefulWidget {
-  const buildGridView({super.key});
+  final DateTime bookDate;
+  final Map<String, int> bookDuration;
+
+  const buildGridView(
+      {super.key, required this.bookDate, required this.bookDuration});
 
   @override
   State<buildGridView> createState() => _buildGridViewState();
@@ -97,10 +98,24 @@ class buildGridView extends StatefulWidget {
 class _buildGridViewState extends State<buildGridView> {
   double getResponsiveFontSize(BuildContext context, double factor) {
     double screenWidth = MediaQuery.of(context).size.width;
-    if (screenWidth > 1000) {
-      return screenWidth * factor / 2;
+    if (screenWidth < 600) {
+      return screenWidth * factor / 0.8;
+    } else if (screenWidth < 1000) {
+      return screenWidth * factor / 1.5;
     }
-    return screenWidth * factor;
+    return screenWidth * factor / 1.2;
+  }
+
+  double getResponsiveImgSize(BuildContext context, double factor) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenheight = MediaQuery.of(context).size.height;
+
+    if (screenWidth < 600) {
+      return screenheight * factor / 1.8;
+    } else if (screenWidth < 1000) {
+      return screenheight * factor / 3;
+    }
+    return screenheight * factor / 2.4;
   }
 
   int _getResponsiveCrossAxisCount(BuildContext context) {
@@ -132,8 +147,10 @@ class _buildGridViewState extends State<buildGridView> {
 
     if (screenWidth > 1000) {
       aspectRatio = (screenWidth / screenHeight) * 0.5;
+    } else if (screenWidth > 600) {
+      aspectRatio = (screenWidth / screenHeight) * 1.7;
     } else {
-      aspectRatio = (screenWidth / screenHeight) * 2;
+      aspectRatio = (screenWidth / screenHeight) * 2.6;
     }
 
     return aspectRatio;
@@ -142,6 +159,67 @@ class _buildGridViewState extends State<buildGridView> {
   @override
   Widget build(BuildContext context) {
     final parkingProvider = Provider.of<ParkingProvider>(context);
+    if (parkingProvider.slots.isEmpty) {
+      parkingProvider.slots = [
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 500, 'height': 200},
+            number: "G1"),
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 400, 'height': 300},
+            number: "A2"),
+        ParkingSlot(
+            parkingID: 'feer',
+            area: {'width': 300, 'height': 500},
+            number: "B1"),
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 600, 'height': 100},
+            number: "D1"),
+      ];
+    }
+
+    var selectedBookings =
+        bookings.where((item) => item.parkingID == parkingProvider.parkID);
+
+    List<String> reservedSlots = []; //contains ID
+
+    DateTime requestedStart = widget.bookDate;
+    DateTime requestedEnd = requestedStart.add(Duration(
+      hours: widget.bookDuration['hour'] ?? 0,
+      minutes: widget.bookDuration['min'] ?? 0,
+    ));
+
+    for (var booking in selectedBookings) {
+      DateTime bookingStart = booking.date;
+      DateTime bookingEnd = bookingStart.add(Duration(
+        hours: booking.duration['hour'] ?? 0,
+        minutes: booking.duration['min'] ?? 0,
+      ));
+
+      bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
+          requestedEnd.isAfter(bookingStart);
+      print(requestedStart);
+      print(requestedEnd);
+      print('----------');
+      print(bookingStart);
+      print(bookingEnd);
+      print('----------');
+
+      if (isOverlapping) {
+        ParkingSlot? slot = parkingProvider.slots.firstWhere(
+            (slot) =>
+                slot.parkingID == parkingProvider.parkID &&
+                slot.number == booking.slotNumber,
+            orElse: () => ParkingSlot(parkingID: '', area: {}, number: ''));
+
+        if (slot != null && !reservedSlots.contains(slot.number)) {
+          reservedSlots.add(slot.number);
+        }
+      }
+    }
+    print(reservedSlots);
 
     return GridView.builder(
       physics: BouncingScrollPhysics(),
@@ -155,89 +233,68 @@ class _buildGridViewState extends State<buildGridView> {
       itemCount: parkingProvider.slots.length,
       itemBuilder: (context, index) {
         ParkingSlot slot = parkingProvider.slots[index];
-        bool isReserved = reservedSlots.contains(slot.id);
+        bool isReserved = reservedSlots.contains(slot.number);
+
         return GestureDetector(
-          onTap: slot.isBooked
+          onTap: isReserved
               ? null
               : () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ParkingBookingPage(
-                            targetSlot: slot, slotID: index)),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ParkingBookingPage())
+                      // builder: (context) => ParkingBookingPage(
+                      //     targetSlot: slot, slotID: index)),
+                      );
                 },
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: 220,
-                height: 160,
-                decoration: BoxDecoration(
-                  color: slot.isBooked
-                      ? Colors.grey.withOpacity(0.8)
-                      : isReserved
-                          ? Colors.grey.withOpacity(0.5)
-                          : Colors.transparent,
-                ),
-                child: CustomPaint(
-                  painter: DashedBorderPainter(),
-                ),
-              ),
-              // Positioned(
-              //   top: 30,
-              //   left: 0,
-              //   child: Container(
-              //     width: 2,
-              //     height: MediaQuery.of(context).size.height,
-              //     child: CustomPaint(
-              //       painter: DashedLinePainter(),
-              //     ),
-              //   ),
-              // ),
-              SizedBox(
-                height: 160,
-                width: 220,
-                child: Column(
+          child: Container(
+            height: 120,
+            width: 200,
+            decoration: BoxDecoration(
+                color: isReserved
+                    ? Colors.grey.withOpacity(0.8)
+                    : Colors.transparent,
+                border: Border.all(color: Color.fromRGBO(103, 83, 164, 1)),
+                borderRadius: BorderRadius.circular(8)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Flexible(
-                          child: Text(slot.id,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: getResponsiveFontSize(context, 0.03),
-                              )),
-                        ),
-                        SizedBox(width: 10),
-                        Text(slot.area,
-                            style: TextStyle(
-                                color: Color.fromRGBO(103, 83, 164, 1))),
-                        if (slot.isBooked) ...[
-                          SizedBox(width: 10),
-                          Text("${slot.hours}h ${slot.minutes}m",
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontSize: getResponsiveFontSize(context, 0.03),
-                              )),
-                        ]
-                      ],
+                    Flexible(
+                      child: Text(slot.number,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: getResponsiveFontSize(context, 0.03),
+                          )),
                     ),
-                    if (slot.isBooked || isReserved) ...[
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.1,
-                        width: 220,
-                        child: Image.asset(
-                          'assets/images/car_elevation2.png',
-                        ),
-                      ),
-                    ],
+                    SizedBox(width: 10),
+                    Text("${slot.area['width']}x${slot.area['height']}",
+                        style:
+                            TextStyle(color: Color.fromRGBO(103, 83, 164, 1))),
+                    if (isReserved) ...[
+                      SizedBox(width: 10),
+                      Text(
+                          "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: getResponsiveFontSize(context, 0.03),
+                          )),
+                    ]
                   ],
                 ),
-              ),
-            ],
+                if (isReserved) ...[
+                  Container(
+                    height: getResponsiveImgSize(context, 0.25),
+                    width: 220,
+                    child: Image.asset(
+                      'assets/images/car_elevation2.png',
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         );
       },
@@ -269,64 +326,6 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-// Dashed border custom painter
-class DashedBorderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Color.fromRGBO(103, 83, 164, 1)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    double dashWidth = 8;
-    double dashSpace = 9;
-    double startX = 0;
-    double startY = 0;
-
-    // Draw top border
-    while (startX < size.width) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
-      startX += dashWidth + dashSpace;
-    }
-
-    startX = 0;
-    startY = size.height;
-
-    // Draw bottom border
-    while (startX < size.width) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
-      startX += dashWidth + dashSpace;
-    }
-
-    startX = 0;
-    startY = 0;
-
-    // Draw left border
-    while (startY < size.height) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
-      startY += dashWidth + dashSpace;
-    }
-
-    startX = size.width;
-    startY = 0;
-
-    // Draw right border
-    while (startY < size.height) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
-      startY += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
   }
 }

@@ -1,9 +1,82 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'parking_booking_page_copy.dart';
 import 'package:provider/provider.dart';
-import 'book.dart';
 import 'main.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// import 'package:geocoding/geocoding.dart';
+// import 'package:flutter_google_places/flutter_google_places.dart';
+// import 'package:google_maps_webservice/places.dart';
+
+// import 'package:flutter/scheduler.dart';
+
+// void main() {
+//   runApp(
+//     // MultiProvider(
+//     //   providers: [
+//     //     ChangeNotifierProvider(create: (context) => ParkingProvider()),
+//     //   ],
+//     ChangeNotifierProvider(
+//       create: (context) => ParkingProvider(),
+//       child: ParkingApp(),
+//     ),
+//   );
+// }
+
+List<Map<String, dynamic>> parkingLoc = [
+  {
+    "parkName": "downtown_parking",
+    "parkSlots": [
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 500, 'height': 200},
+          number: "A1"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 400, 'height': 300}, number: "A2"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 300, 'height': 500}, number: "B1"),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 600, 'height': 100},
+          number: "C1"),
+    ]
+  },
+  {
+    "parkName": "feer",
+    "parkSlots": [
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 500, 'height': 200},
+          number: "A1"),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 400, 'height': 300},
+          number: "A2"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 300, 'height': 500}, number: "B1"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 600, 'height': 100}, number: "C1"),
+    ]
+  }
+];
+
+const kGoogleApiKey = "AIzaSyAIb-HJSutTY63dIxqAVYZ9dAl6fE-BsQA";
+
+// GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
+
+class ParkingApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MapScreen(),
+    );
+  }
+}
 
 class MapScreen extends StatefulWidget {
   @override
@@ -13,13 +86,15 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _controller;
   Set<Marker> markers = Set();
+
   final double _latitude = 28.39412359758817;
   final double _longitude = 36.47677376620625;
-  List<Map<String, dynamic>> parkingPlaces = [];
+  final String _apiKey = 'AIzaSyAIb-HJSutTY63dIxqAVYZ9dAl6fE-BsQA';
 
   @override
   void initState() {
     super.initState();
+    // _loadParkingSpots();
     _fetchParkingPlaces();
   }
 
@@ -27,60 +102,107 @@ class _MapScreenState extends State<MapScreen> {
     final firestore = FirebaseFirestore.instance;
     final snapshot = await firestore.collection('parking_places').get();
     setState(() {
-      parkingPlaces = snapshot.docs.map((doc) {
-        final data = doc.data();
-        print('Fetched data: $data'); // Print fetched data
-        final location = data['location'] as Map<String, dynamic>?;
-        final lat = location?['lat'] as double?;
-        final long = location?['long'] as double?;
+      parkingPlaces = snapshot.docs
+          .map((doc) {
+            final data = doc.data();
+            print('Fetched data: $data'); // Print fetched data
+            final location = data['location'] as Map<String, dynamic>?;
+            final lat = location?['lat'] as double?;
+            final long = location?['long'] as double?;
 
-        if (lat == null || long == null) {
-          print('Invalid location data for ${data['name']}');
-          return null; // Return null for invalid entries
-        }
+            if (lat == null || long == null) {
+              print('Invalid location data for ${data['name']}');
+              return null; // Return null for invalid entries
+            }
 
-        return {
-          "parkingName": data['name'],
-          "parkingLoc": LatLng(lat, long),
-        };
-      }).where((item) => item != null).toList().cast<Map<String, dynamic>>(); // Cast to non-nullable list
+            return {
+              "parkingName": data['name'],
+              "parkingLoc": LatLng(lat, long),
+            };
+          })
+          .where((item) => item != null)
+          .toList()
+          .cast<Map<String, dynamic>>(); // Cast to non-nullable list
     });
   }
 
+  // Function to fetch nearby parking from Google Places API
+  Future<List<Map<String, dynamic>>> fetchNearbyParking(
+      double latitude, double longitude) async {
+    final String url =
+        'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$latitude,$longitude&radius=2000&type=parking&key=$_apiKey';
+
+    final response = await http.get(Uri.parse(url));
+
+    try {
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        print('API Response: $data');
+
+        if (data['results'] == null || data['results'].isEmpty) {
+          print("No parking spots found...");
+          return [];
+        }
+
+        List<Map<String, dynamic>> parkingSpots = [];
+        for (var place in data['results']) {
+          parkingSpots.add({
+            'name': place['name'],
+            'lat': place['geometry']['location']['lat'],
+            'lng': place['geometry']['location']['lng'],
+            'address': place['vicinity'],
+          });
+        }
+        return parkingSpots;
+      } else {
+        throw Exception('Failed to load parking spots: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching parking spots: $e');
+      return []; // Return an empty list in case of an error
+    }
+  }
+
+  List<Map<String, dynamic>> parkingPlaces = [
+    {
+      "parkingName": "downtown_parking",
+      "parkingLoc": LatLng(28.381887070530755, 36.48516313513801),
+    },
+    {
+      "parkingName": "feer",
+      "parkingLoc": LatLng(28.38430764818877, 36.48233091840871),
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
-    // Filter out null values and create markers
-    markers = parkingPlaces
-        .where((item) => item != null) // Filter out null values
-        .map((item) {
+    markers = parkingPlaces.where((item) => item != null).map((item) {
       return Marker(
-        markerId: MarkerId(item!['parkingName']), // Use non-null assertion
+        markerId: MarkerId(item['parkingName']),
         position: item['parkingLoc'],
         onTap: () {
           List<ParkingSlot> selectedSlots = [];
-
-          // Find the selected parking place
-          var selectedParking = parkingPlaces.firstWhere(
-                (p) => p["parkingName"] == item["parkingName"],
-            orElse: () => <String, dynamic>{}, // Return an empty map if not found
+          var selectedParking = parkingLoc.firstWhere(
+            (p) => p["parkName"] == item["parkingName"],
+            orElse: () => {},
           );
 
-          // Check if the selected parking place is not empty
           if (selectedParking.isNotEmpty) {
-            // Assuming selectedParking contains a list of slots under the key "parkSlots"
-            if (selectedParking["parkSlots"] != null) {
-              selectedSlots = List<ParkingSlot>.from(selectedParking["parkSlots"]);
-            }
+            selectedSlots =
+                List<ParkingSlot>.from(selectedParking["parkSlots"]);
           }
 
-          // Update the provider or navigate to the next screen
           Provider.of<ParkingProvider>(context, listen: false)
               .setParkingSlots(selectedSlots);
+
+          Provider.of<ParkingProvider>(context, listen: false)
+              .setParkingID(item["parkingName"]);
 
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ParkingSlotsScreen(),
+              builder: (context) => ParkingBookingPage(),
             ),
           );
         },
@@ -96,10 +218,19 @@ class _MapScreenState extends State<MapScreen> {
       ),
       body: Column(
         children: [
-          SizedBox(height: 20),
-          Text('Select A Parking Spot', style: TextStyle(fontSize: 14)),
-          SizedBox(height: 20),
+          SizedBox(
+            height: 20,
+          ),
+          Text('Select A Parking Spot',
+              style: TextStyle(
+                fontSize: 14,
+              )),
+          SizedBox(
+            height: 20,
+          ),
           Expanded(
+            // height: 500,
+            // width: 500,
             child: Stack(
               children: [
                 Container(
@@ -107,12 +238,14 @@ class _MapScreenState extends State<MapScreen> {
                   child: Consumer(builder: (context, provider, child) {
                     return Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(50)),
-                      ),
+                          borderRadius: BorderRadius.all(
+                        Radius.circular(50),
+                      )),
                       child: GoogleMap(
                         initialCameraPosition: CameraPosition(
-                          target: LatLng(_latitude, _longitude),
-                          zoom: 15,
+                          target:
+                              LatLng(_latitude, _longitude), // Center of campus
+                          zoom: 12, // Default zoom level
                         ),
                         buildingsEnabled: true,
                         compassEnabled: true,
@@ -121,6 +254,7 @@ class _MapScreenState extends State<MapScreen> {
                         onMapCreated: (GoogleMapController controller) {
                           _controller = controller;
                         },
+                        myLocationButtonEnabled: true,
                       ),
                     );
                   }),
@@ -128,7 +262,9 @@ class _MapScreenState extends State<MapScreen> {
               ],
             ),
           ),
-          SizedBox(height: 50),
+          SizedBox(
+            height: 50,
+          ),
         ],
       ),
     );
