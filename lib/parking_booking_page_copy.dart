@@ -25,7 +25,7 @@ class ParkingBookingPage extends StatefulWidget {
   final int slotID;
   late ParkingSlot targetSlot;
 
-  ParkingBookingPage({required this.targetSlot, required this.slotID});
+  ParkingBookingPage({super.key, required this.targetSlot, required this.slotID});
 
   @override
   _ParkingBookingPageState createState() => _ParkingBookingPageState();
@@ -34,6 +34,7 @@ class ParkingBookingPage extends StatefulWidget {
 class _ParkingBookingPageState extends State<ParkingBookingPage> {
   // late GifController controller;
 
+  @override
   void initState() {
     super.initState();
     // controller = GifController(vsync: this);
@@ -239,7 +240,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                       children: [
                         Column(
                           children: [
-                            Container(
+                            SizedBox(
                               width: 60,
                               child: TextFormField(
                                 controller: hourController,
@@ -267,7 +268,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                         SizedBox(width: 16), // Adjust spacing
                         Column(
                           children: [
-                            Container(
+                            SizedBox(
                               width: 60,
                               child: TextFormField(
                                 controller: minuteController,

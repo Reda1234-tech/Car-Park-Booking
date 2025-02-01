@@ -44,6 +44,8 @@ String exitSlot = 'C-2';
 Set<String> reservedSlots = {'A-3', 'B-4'};
 
 class ParkingSlotsScreen extends StatelessWidget {
+  const ParkingSlotsScreen({super.key});
+
   // final List<ParkingSlot> parkingLoc;
   // final String parkingName;
 
@@ -193,7 +195,7 @@ class _buildGridViewState extends State<buildGridView> {
               //     ),
               //   ),
               // ),
-              Container(
+              SizedBox(
                 height: 160,
                 width: 220,
                 child: Column(
@@ -210,7 +212,7 @@ class _buildGridViewState extends State<buildGridView> {
                               )),
                         ),
                         SizedBox(width: 10),
-                        Text("${slot.area}",
+                        Text(slot.area,
                             style: TextStyle(
                                 color: Color.fromRGBO(103, 83, 164, 1))),
                         if (slot.isBooked) ...[
@@ -224,7 +226,7 @@ class _buildGridViewState extends State<buildGridView> {
                       ],
                     ),
                     if (slot.isBooked || isReserved) ...[
-                      Container(
+                      SizedBox(
                         height: MediaQuery.of(context).size.height * 0.1,
                         width: 220,
                         child: Image.asset(

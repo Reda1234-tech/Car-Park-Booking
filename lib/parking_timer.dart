@@ -6,6 +6,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,7 +21,7 @@ class MyApp extends StatelessWidget {
 class ParkingTimerPage extends StatefulWidget {
   final String slotName;
 
-  ParkingTimerPage({required this.slotName});
+  const ParkingTimerPage({super.key, required this.slotName});
 
   @override
   _ParkingTimerPageState createState() => _ParkingTimerPageState();

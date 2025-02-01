@@ -3,8 +3,12 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import './book.dart'; // Ensure the path is correct
 import 'maps.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 class SplashPage extends StatelessWidget {
+  const SplashPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -71,7 +75,12 @@ class ParkingProvider extends ChangeNotifier {
   }
 }
 
-void main() {
+void main()
+  async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(
     ChangeNotifierProvider(
       create: (context) => ParkingProvider(),
