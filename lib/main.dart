@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
-import './book.dart'; // Ensure the path is correct
 import 'maps.dart';
 
 class SplashPage extends StatelessWidget {
@@ -10,7 +9,7 @@ class SplashPage extends StatelessWidget {
     double screenWidth = MediaQuery.of(context).size.width;
     // double screenHeight = MediaQuery.of(context).size.height;
 
-    double imageSize = screenWidth * 0.7;
+    double imageSize = screenWidth * 0.5;
     double fontSize = screenWidth * 0.08;
 
     // Navigate to the next page after 5 seconds
@@ -29,11 +28,11 @@ class SplashPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Display the image with responsive size (larger size)
-            // Image.asset(
-            //   'assets/images/img2.png',
-            //   height: imageSize,
-            //   width: imageSize,
-            // ),
+            Image.asset(
+              'assets/images/img2.png',
+              height: imageSize,
+              width: imageSize,
+            ),
             SizedBox(height: 20),
             Text(
               'Easy Parking',
@@ -50,6 +49,7 @@ class SplashPage extends StatelessWidget {
   }
 }
 
+//
 class ParkingSlot {
   final String id;
   final String area;
