@@ -245,7 +245,7 @@ class _MapScreenState extends State<MapScreen> {
                         initialCameraPosition: CameraPosition(
                           target:
                               LatLng(_latitude, _longitude), // Center of campus
-                          zoom: 12, // Default zoom level
+                          zoom: 14, // Default zoom level
                         ),
                         buildingsEnabled: true,
                         compassEnabled: true,
