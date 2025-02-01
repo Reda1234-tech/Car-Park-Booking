@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'parking_booking_page_copy.dart';
-import 'main.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ParkingProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: ParkingSlotsScreen(
+          bookDate: DateTime.now(),
+          bookDuration: {'hour': 2, 'min': 30},
+        ),
+      ),
+    ),
+  );
+}
 
 class ParkingSlot {
   final String parkingID;
@@ -19,7 +37,7 @@ class ParkingSlot {
 
 class ParkingProvider with ChangeNotifier {
   List<ParkingSlot> _slots = [];
-  String _parkID = '';
+  String _parkID = 'downtown_parking'; // Default parking ID
 
   List<ParkingSlot> get slots => _slots;
   String get parkID => _parkID;
@@ -48,6 +66,30 @@ class ParkingProvider with ChangeNotifier {
 
     notifyListeners();
   }
+}
+
+// Placeholder for bookings
+List<Booking> bookings = [
+  Booking(
+    parkingID: 'downtown_parking',
+    slotNumber: 'G1',
+    date: DateTime.now(),
+    duration: {'hour': 1, 'min': 0},
+  ),
+];
+
+class Booking {
+  final String parkingID;
+  final String slotNumber;
+  final DateTime date;
+  final Map<String, int> duration;
+
+  Booking({
+    required this.parkingID,
+    required this.slotNumber,
+    required this.date,
+    required this.duration,
+  });
 }
 
 class ParkingSlotsScreen extends StatelessWidget {
@@ -294,6 +336,21 @@ class _buildGridViewState extends State<buildGridView> {
           ),
         );
       },
+    );
+  }
+}
+
+// Placeholder for ParkingBookingPage
+class ParkingBookingPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Booking Page"),
+      ),
+      body: Center(
+        child: Text("Booking Page Placeholder"),
+      ),
     );
   }
 }
