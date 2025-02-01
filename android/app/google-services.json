@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205984747203",
+    "project_id": "car-park-booking-79af7",
+    "storage_bucket": "car-park-booking-79af7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205984747203:android:04f13ce4b7d3a927955c76",
+        "android_client_info": {
+          "package_name": "com.example.temp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTbps3HBJ3fst2ahi93yxgamfYMiKQotU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
