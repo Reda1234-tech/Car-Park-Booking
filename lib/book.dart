@@ -180,8 +180,6 @@ class _buildGridViewState extends State<buildGridView> {
       ];
     }
 
-    print(parkingProvider.slots);
-
     var selectedBookings =
         bookings.where((item) => item.parkingID == parkingProvider.parkID);
 
