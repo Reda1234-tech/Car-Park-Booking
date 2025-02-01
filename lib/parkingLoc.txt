@@ -1,0 +1,42 @@
+/*
+    {
+      "parkingName": "faiezrashedy",
+      "parkingLoc": LatLng(28.373652902944748, 36.474148326350225),
+    },
+    {
+      "parkingName": "shareaafaculty",
+      "parkingLoc": LatLng(28.37391046232078, 36.47226390499414),
+    },
+    */
+
+
+
+    /*
+    {
+      "parkingName": "BtwMiddlePark",
+      "parkingLoc": LatLng(28.38385457510328, 36.48241674909716),
+    },
+    {
+      "parkingName": "NorthPark",
+      "parkingLoc": LatLng(28.391850748988013, 36.478448742014166),
+    },
+    */
+
+
+     {
+      "parkingName": "MiddlePark",
+      "parkingLoc": LatLng(28.386086163460778, 36.48629568337576),
+    },
+
+    {
+      "parkingName": "AbvNorthPark",
+      "parkingLoc": LatLng(28.394981997394027, 36.477801571592586),
+    },
+    {
+      "parkingName": "temp1",
+      "parkingLoc": LatLng(28.391048436166116, 36.478019580309514),
+    },
+    {
+      "parkingName": "nearresho",
+      "parkingLoc": LatLng(28.39407811999997, 36.47768698639167),
+    },

@@ -46,7 +46,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
   }
 
   DateTime selectedDate = DateTime.now();
-  TimeOfDay selectedTime = TimeOfDay(hour: 11, minute: 00);
+  TimeOfDay selectedTime = TimeOfDay(hour: 10, minute: 00);
   TextEditingController hourController = TextEditingController();
   TextEditingController minuteController = TextEditingController();
   String? errorMessage;
@@ -181,28 +181,6 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Spot name field
-              // Text("Spot name",
-              //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              // SizedBox(height: 8),
-              // Container(
-              //   width: 50,
-              //   padding: EdgeInsets.all(12),
-              //   decoration: BoxDecoration(
-              //     borderRadius: BorderRadius.circular(8),
-              //     color: Color.fromRGBO(103, 83, 164, 1),
-              //   ),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.start,
-              //     children: [
-              //       // Text(
-              //       //   // widget.slotID.toString(), // Display the spot name
-              //       //   // widget.targetSlot.id, // Display the spot name
-              //       //   style: TextStyle(fontSize: 16, color: Colors.white),
-              //       // ),
-              //     ],
-              //   ),
-              // ),
               SizedBox(height: 8),
 
               // Date selection
@@ -226,6 +204,30 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                   ),
                 ),
               ),
+              SizedBox(height: 16),
+
+              // Start time selection
+              Text("Start hour",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _selectTime(context),
+                child: Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(selectedTime.format(context)),
+                      Icon(Icons.access_time, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+
               SizedBox(height: 16),
 
               // Duration input
@@ -312,29 +314,6 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                   ],
                 ),
               ),
-              SizedBox(height: 16),
-
-              // Start time selection
-              Text("Start hour",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
-              GestureDetector(
-                onTap: () => _selectTime(context),
-                child: Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(selectedTime.format(context)),
-                      Icon(Icons.access_time, color: Colors.grey),
-                    ],
-                  ),
-                ),
-              ),
               SizedBox(height: 24),
               Row(
                 mainAxisAlignment:
@@ -372,7 +351,13 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => ParkingSlotsScreen(
-                                            bookDate: selectedDate,
+                                            bookDate: DateTime(
+                                              selectedDate.year,
+                                              selectedDate.month,
+                                              selectedDate.day,
+                                              selectedTime.hour,
+                                              selectedTime.minute,
+                                            ),
                                             bookDuration: {
                                               'hour': selectedHours,
                                               'min': selectedMinutes

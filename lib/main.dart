@@ -57,7 +57,7 @@ List<ParkBooking> bookings = [
       date: DateTime(2025, 2, 3, 10, 0),
       duration: {'hour': 2, 'min': 30},
       parkingID: "downtown_parking",
-      slotNumber: "A1",
+      slotNumber: "G1",
       userID: "user123"),
   ParkBooking(
       date: DateTime(2025, 2, 4, 11, 0),
