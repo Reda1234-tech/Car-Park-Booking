@@ -2,9 +2,9 @@ import 'package:car_park_booking/maps.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import './main.dart';
-import 'package:flutter/services.dart';
-
+import 'package:flutter/services.dart' show Color, FilteringTextInputFormatter, FontWeight, LengthLimitingTextInputFormatter, Size, TextAlign, TextEditingValue, TextInputFormatter, TextInputType;
+import './book.dart';
+import 'main.dart';
 // import 'package:gif/gif.dart';
 
 // void main() {
