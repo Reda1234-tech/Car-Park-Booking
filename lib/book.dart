@@ -10,14 +10,19 @@ void main() {
     //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
     // ],
     // child:
-    ChangeNotifierProvider(
-      create: (context) => ParkingProvider(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: ParkingSlotsScreen(),
-        // ),
+    // ChangeNotifierProvider(
+    //   create: (context) => ParkingProvider(),
+    //   child:
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: ParkingSlotsScreen(
+        // parkingID: "downtown_parking",
+        bookDate: DateTime(2025, 1, 30, 11, 0),
+        bookDuration: {'hour': 0, 'min': 30},
       ),
+      // ),
     ),
+    // ),
   );
 }
 
@@ -28,9 +33,11 @@ Set<String> reservedSlots = {'A-1', 'B-4'};
 
 class ParkingSlotsScreen extends StatelessWidget {
   // final List<ParkingSlot> parkingLoc;
-  // final String parkingName;
+  // final String parkingID;
+  final DateTime bookDate;
+  final Map<String, int> bookDuration;
 
-  // ParkingSlotsScreen({required this.parkingName, required this.parkingLoc});
+  ParkingSlotsScreen({required this.bookDate, required this.bookDuration});
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +70,12 @@ class ParkingSlotsScreen extends StatelessWidget {
                     color: Colors.yellow.shade800)),
           Expanded(
             child: Stack(
-              children: [buildGridView()],
+              children: [
+                buildGridView(
+                  bookDate: bookDate,
+                  bookDuration: bookDuration,
+                )
+              ],
             ),
           )
         ],
@@ -73,7 +85,11 @@ class ParkingSlotsScreen extends StatelessWidget {
 }
 
 class buildGridView extends StatefulWidget {
-  const buildGridView({super.key});
+  final DateTime bookDate;
+  final Map<String, int> bookDuration;
+
+  const buildGridView(
+      {super.key, required this.bookDate, required this.bookDuration});
 
   @override
   State<buildGridView> createState() => _buildGridViewState();
@@ -145,11 +161,68 @@ class _buildGridViewState extends State<buildGridView> {
     final parkingProvider = Provider.of<ParkingProvider>(context);
     if (parkingProvider.slots.isEmpty) {
       parkingProvider.slots = [
-        ParkingSlot(id: 'A-1', area: 'Small'),
-        ParkingSlot(id: 'A-2', area: 'Medium'),
-        ParkingSlot(id: 'A-6', area: 'Large'),
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 500, 'height': 200},
+            number: "G1"),
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 400, 'height': 300},
+            number: "A2"),
+        ParkingSlot(
+            parkingID: 'feer',
+            area: {'width': 300, 'height': 500},
+            number: "B1"),
+        ParkingSlot(
+            parkingID: 'downtown_parking',
+            area: {'width': 600, 'height': 100},
+            number: "D1"),
       ];
     }
+
+    print(parkingProvider.slots);
+
+    var selectedBookings =
+        bookings.where((item) => item.parkingID == parkingProvider.parkID);
+
+    List<String> reservedSlots = []; //contains ID
+
+    DateTime requestedStart = widget.bookDate;
+    DateTime requestedEnd = requestedStart.add(Duration(
+      hours: widget.bookDuration['hour'] ?? 0,
+      minutes: widget.bookDuration['min'] ?? 0,
+    ));
+
+    for (var booking in selectedBookings) {
+      DateTime bookingStart = booking.date;
+      DateTime bookingEnd = bookingStart.add(Duration(
+        hours: booking.duration['hour'] ?? 0,
+        minutes: booking.duration['min'] ?? 0,
+      ));
+
+      bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
+          requestedEnd.isAfter(bookingStart);
+      print(requestedStart);
+      print(requestedEnd);
+      print('----------');
+      print(bookingStart);
+      print(bookingEnd);
+      print('----------');
+
+      if (isOverlapping) {
+        ParkingSlot? slot = parkingProvider.slots.firstWhere(
+            (slot) =>
+                slot.parkingID == parkingProvider.parkID &&
+                slot.number == booking.slotNumber,
+            orElse: () => ParkingSlot(parkingID: '', area: {}, number: ''));
+
+        if (slot != null && !reservedSlots.contains(slot.number)) {
+          reservedSlots.add(slot.number);
+        }
+      }
+    }
+    print(reservedSlots);
+
     return GridView.builder(
       physics: BouncingScrollPhysics(),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -162,27 +235,27 @@ class _buildGridViewState extends State<buildGridView> {
       itemCount: parkingProvider.slots.length,
       itemBuilder: (context, index) {
         ParkingSlot slot = parkingProvider.slots[index];
-        bool isReserved = reservedSlots.contains(slot.id);
+        bool isReserved = reservedSlots.contains(slot.number);
+
         return GestureDetector(
-          onTap: slot.isBooked
+          onTap: isReserved
               ? null
               : () {
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ParkingBookingPage(
-                            targetSlot: slot, slotID: index)),
-                  );
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ParkingBookingPage())
+                      // builder: (context) => ParkingBookingPage(
+                      //     targetSlot: slot, slotID: index)),
+                      );
                 },
           child: Container(
             height: 120,
             width: 200,
             decoration: BoxDecoration(
-                color: slot.isBooked
+                color: isReserved
                     ? Colors.grey.withOpacity(0.8)
-                    : isReserved
-                        ? Colors.grey.withOpacity(0.5)
-                        : Colors.transparent,
+                    : Colors.transparent,
                 border: Border.all(color: Color.fromRGBO(103, 83, 164, 1)),
                 borderRadius: BorderRadius.circular(8)),
             child: Column(
@@ -192,19 +265,20 @@ class _buildGridViewState extends State<buildGridView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible(
-                      child: Text(slot.id,
+                      child: Text(slot.number,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: getResponsiveFontSize(context, 0.03),
                           )),
                     ),
                     SizedBox(width: 10),
-                    Text("${slot.area}",
+                    Text("${slot.area['width']}x${slot.area['height']}",
                         style:
                             TextStyle(color: Color.fromRGBO(103, 83, 164, 1))),
-                    if (slot.isBooked) ...[
+                    if (isReserved) ...[
                       SizedBox(width: 10),
-                      Text("${slot.hours}h ${slot.minutes}m",
+                      Text(
+                          "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: getResponsiveFontSize(context, 0.03),
@@ -212,7 +286,7 @@ class _buildGridViewState extends State<buildGridView> {
                     ]
                   ],
                 ),
-                if (slot.isBooked || isReserved) ...[
+                if (isReserved) ...[
                   Container(
                     height: getResponsiveImgSize(context, 0.25),
                     width: 220,
@@ -254,64 +328,6 @@ class DashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
-  }
-}
-
-// Dashed border custom painter
-class DashedBorderPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Color.fromRGBO(103, 83, 164, 1)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-
-    double dashWidth = 8;
-    double dashSpace = 9;
-    double startX = 0;
-    double startY = 0;
-
-    // Draw top border
-    while (startX < size.width) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
-      startX += dashWidth + dashSpace;
-    }
-
-    startX = 0;
-    startY = size.height;
-
-    // Draw bottom border
-    while (startX < size.width) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
-      startX += dashWidth + dashSpace;
-    }
-
-    startX = 0;
-    startY = 0;
-
-    // Draw left border
-    while (startY < size.height) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
-      startY += dashWidth + dashSpace;
-    }
-
-    startX = size.width;
-    startY = 0;
-
-    // Draw right border
-    while (startY < size.height) {
-      canvas.drawLine(
-          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
-      startY += dashWidth + dashSpace;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
   }
 }

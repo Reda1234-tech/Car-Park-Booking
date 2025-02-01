@@ -187,3 +187,64 @@ Future<Null> displayPrediction(Prediction p) async {
               //     ),
               //   ),
               // ),
+
+
+
+              
+// Dashed border custom painter
+class DashedBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Color.fromRGBO(103, 83, 164, 1)
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    double dashWidth = 8;
+    double dashSpace = 9;
+    double startX = 0;
+    double startY = 0;
+
+    // Draw top border
+    while (startX < size.width) {
+      canvas.drawLine(
+          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
+      startX += dashWidth + dashSpace;
+    }
+
+    startX = 0;
+    startY = size.height;
+
+    // Draw bottom border
+    while (startX < size.width) {
+      canvas.drawLine(
+          Offset(startX, startY), Offset(startX + dashWidth, startY), paint);
+      startX += dashWidth + dashSpace;
+    }
+
+    startX = 0;
+    startY = 0;
+
+    // Draw left border
+    while (startY < size.height) {
+      canvas.drawLine(
+          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
+      startY += dashWidth + dashSpace;
+    }
+
+    startX = size.width;
+    startY = 0;
+
+    // Draw right border
+    while (startY < size.height) {
+      canvas.drawLine(
+          Offset(startX, startY), Offset(startX, startY + dashWidth), paint);
+      startY += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}

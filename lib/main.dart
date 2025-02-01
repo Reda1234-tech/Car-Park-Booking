@@ -49,26 +49,73 @@ class SplashPage extends StatelessWidget {
   }
 }
 
-//
-class ParkingSlot {
-  final String id;
-  final String area;
-  bool isBooked;
-  int hours;
-  int minutes;
-  String startDate;
+List<ParkBooking> bookings = [
+  ParkBooking(
+      date: DateTime(2025, 2, 3, 10, 0),
+      duration: {'hour': 2, 'min': 30},
+      parkingID: "downtown_parking",
+      slotNumber: "A1",
+      userID: "user123"),
+  ParkBooking(
+      date: DateTime(2025, 2, 4, 11, 0),
+      duration: {'hour': 3, 'min': 0},
+      parkingID: "downtown_parking",
+      slotNumber: "A2",
+      userID: "user123"),
+  ParkBooking(
+      date: DateTime(2025, 2, 4, 11, 0),
+      duration: {'hour': 1, 'min': 30},
+      parkingID: "downtown_parking",
+      slotNumber: "A2",
+      userID: "user456"),
+  ParkBooking(
+      date: DateTime(2025, 2, 3, 12, 0),
+      duration: {'hour': 1, 'min': 30},
+      parkingID: "downtown_parking",
+      slotNumber: "A2",
+      userID: "user456"),
+  ParkBooking(
+      date: DateTime(2025, 2, 3, 10, 0),
+      duration: {'hour': 2, 'min': 30},
+      parkingID: "feer",
+      slotNumber: "B1",
+      userID: "user456"),
+];
 
-  ParkingSlot(
-      {required this.id,
-      required this.area,
-      this.isBooked = false,
-      this.hours = 0,
-      this.minutes = 0,
-      this.startDate = ""});
+//
+
+class ParkBooking {
+  String parkingID;
+  String slotNumber;
+  final DateTime date;
+  final Map<String, int> duration;
+  String userID;
+
+  ParkBooking({
+    required this.parkingID,
+    required this.slotNumber,
+    required this.date,
+    required this.duration,
+    required this.userID,
+  });
+}
+
+class ParkingSlot {
+  final String parkingID;
+  final String number;
+  final Map<String, double> area;
+
+  ParkingSlot({
+    required this.parkingID,
+    required this.number,
+    required this.area,
+  });
 }
 
 class ParkingProvider extends ChangeNotifier {
+  List<ParkBooking> bookedSlots = [];
   List<ParkingSlot> slots = [];
+  String parkID = "";
 
   // Set the initial list of slots (can be dynamic or from an API)
   void setParkingSlots(List<ParkingSlot> newSlots) {
@@ -76,14 +123,24 @@ class ParkingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setBookedSlots(List<ParkBooking> newBookedSlots) {
+    bookedSlots = newBookedSlots;
+    notifyListeners();
+  }
+
+  void setParkingID(String parkingID) {
+    parkID = parkingID;
+    notifyListeners();
+  }
+
   // Book a slot
   void bookSlot(String id, int hours, int minutes, String date) {
-    int index = slots.indexWhere((slot) => slot.id == id);
+    int index = slots.indexWhere((slot) => slot.number == id);
     if (index != -1) {
-      slots[index].isBooked = true;
-      slots[index].hours = hours;
-      slots[index].minutes = minutes;
-      slots[index].startDate = date;
+      // slots[index].isBooked = true;
+      // slots[index].hours = hours;
+      // slots[index].minutes = minutes;
+      // slots[index].startDate = date;
       notifyListeners();
     }
   }

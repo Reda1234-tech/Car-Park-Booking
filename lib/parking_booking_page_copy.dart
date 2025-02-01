@@ -1,3 +1,4 @@
+import 'package:car_park_booking/maps.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +23,10 @@ import 'package:flutter/services.dart';
 // }
 
 class ParkingBookingPage extends StatefulWidget {
-  final int slotID;
-  late ParkingSlot targetSlot;
+  // final int slotID;
+  // late ParkingSlot targetSlot;
 
-  ParkingBookingPage({required this.targetSlot, required this.slotID});
+  // ParkingBookingPage({required this.targetSlot, required this.slotID});
 
   @override
   _ParkingBookingPageState createState() => _ParkingBookingPageState();
@@ -137,8 +138,8 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
               SizedBox(height: 16),
               // Display an animated GIF for the parking slot
 
-              SizedBox(height: 8),
-              Text('Slot: ${widget.targetSlot.id}'),
+              // SizedBox(height: 8),
+              // Text('Slot: ${widget.targetSlot.id}'),
             ],
           ),
           actions: <Widget>[
@@ -148,7 +149,13 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                 // Navigator.of(context).pop();
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ParkingSlotsScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => ParkingSlotsScreen(
+                              bookDate: selectedDate,
+                              bookDuration: {
+                                'hour': selectedHours,
+                                'min': selectedMinutes
+                              })),
                 );
               },
             ),
@@ -175,28 +182,28 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Spot name field
-              Text("Spot name",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              // Text("Spot name",
+              //     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              // SizedBox(height: 8),
+              // Container(
+              //   width: 50,
+              //   padding: EdgeInsets.all(12),
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(8),
+              //     color: Color.fromRGBO(103, 83, 164, 1),
+              //   ),
+              //   child: Row(
+              //     mainAxisAlignment: MainAxisAlignment.start,
+              //     children: [
+              //       // Text(
+              //       //   // widget.slotID.toString(), // Display the spot name
+              //       //   // widget.targetSlot.id, // Display the spot name
+              //       //   style: TextStyle(fontSize: 16, color: Colors.white),
+              //       // ),
+              //     ],
+              //   ),
+              // ),
               SizedBox(height: 8),
-              Container(
-                width: 50,
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Color.fromRGBO(103, 83, 164, 1),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      // widget.slotID.toString(), // Display the spot name
-                      widget.targetSlot.id, // Display the spot name
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 16),
 
               // Date selection
               Text("Select date",
@@ -338,8 +345,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => ParkingSlotsScreen()),
+                          MaterialPageRoute(builder: (context) => MapScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -362,22 +368,32 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                               int selectedMinutes =
                                   int.tryParse(minuteController.text) ?? 0;
 
-                              parkProvider.bookSlot(
-                                widget.targetSlot.id,
-                                selectedHours,
-                                selectedMinutes,
-                                DateFormat('yyyy-MM-dd').format(
-                                    selectedDate), // Format selectedDate as a string
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => ParkingSlotsScreen(
+                                            bookDate: selectedDate,
+                                            bookDuration: {
+                                              'hour': selectedHours,
+                                              'min': selectedMinutes
+                                            })),
                               );
 
-                              _showBookingDetails(context);
+                              // parkProvider.bookSlot(
+                              //   widget.targetSlot.id,
+                              //   selectedHours,
+                              //   selectedMinutes,
+                              //   DateFormat('yyyy-MM-dd').format(
+                              //       selectedDate), // Format selectedDate as a string
+                              // );
+                              // _showBookingDetails(context);
                             }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(103, 83, 164, 1),
                             minimumSize: Size(double.infinity, 50),
                           ),
-                          child: Text("Reserve",
+                          child: Text("Choose Slot",
                               style:
                                   TextStyle(fontSize: 16, color: Colors.white)),
                         );

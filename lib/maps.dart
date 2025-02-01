@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'book.dart';
+import 'parking_booking_page_copy.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
 // import 'package:geocoding/geocoding.dart';
@@ -27,39 +27,37 @@ import 'main.dart';
 
 List<Map<String, dynamic>> parkingLoc = [
   {
-    "parkName": "temp1",
+    "parkName": "downtown_parking",
     "parkSlots": [
-      ParkingSlot(id: 'A-1', area: 'Small'),
-      ParkingSlot(id: 'A-2', area: 'Medium'),
-      ParkingSlot(id: 'A-3', area: 'Large'),
-      ParkingSlot(id: 'A-4', area: 'Medium'),
-      ParkingSlot(id: 'B-1', area: 'Small'),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 500, 'height': 200},
+          number: "A1"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 400, 'height': 300}, number: "A2"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 300, 'height': 500}, number: "B1"),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 600, 'height': 100},
+          number: "C1"),
     ]
   },
   {
-    "parkName": "nearresho",
+    "parkName": "feer",
     "parkSlots": [
-      ParkingSlot(id: 'B-2', area: 'Large'),
-      ParkingSlot(id: 'B-3', area: 'Small'),
-      ParkingSlot(id: 'B-4', area: 'Medium'),
-      ParkingSlot(id: 'C-1', area: 'Small'),
-      ParkingSlot(id: 'C-2', area: 'Large'),
-    ]
-  },
-  {
-    "parkName": "AbvNorthPark",
-    "parkSlots": [
-      ParkingSlot(id: 'D-1', area: 'Small'),
-      ParkingSlot(id: 'D-2', area: 'Large'),
-      ParkingSlot(id: 'E-2', area: 'Large'),
-      ParkingSlot(id: 'G-1', area: 'Small'),
-      ParkingSlot(id: 'G-2', area: 'Large'),
-      ParkingSlot(id: 'H-1', area: 'Small'),
-      ParkingSlot(id: 'H-2', area: 'Large'),
-      ParkingSlot(id: 'I-1', area: 'Small'),
-      ParkingSlot(id: 'I-2', area: 'Large'),
-      ParkingSlot(id: 'J-1', area: 'Small'),
-      ParkingSlot(id: 'J-2', area: 'Large'),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 500, 'height': 200},
+          number: "A1"),
+      ParkingSlot(
+          parkingID: 'downtown_parking',
+          area: {'width': 400, 'height': 300},
+          number: "A2"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 300, 'height': 500}, number: "B1"),
+      ParkingSlot(
+          parkingID: 'feer', area: {'width': 600, 'height': 100}, number: "C1"),
     ]
   }
 ];
@@ -137,49 +135,13 @@ class _MapScreenState extends State<MapScreen> {
 
   List<Map<String, dynamic>> parkingPlaces = [
     {
-      "parkingName": "SouthPark",
+      "parkingName": "downtown_parking",
       "parkingLoc": LatLng(28.381887070530755, 36.48516313513801),
     },
     {
-      "parkingName": "BlwMiddlePark",
+      "parkingName": "feer",
       "parkingLoc": LatLng(28.38430764818877, 36.48233091840871),
     },
-    {
-      "parkingName": "MiddlePark",
-      "parkingLoc": LatLng(28.386086163460778, 36.48629568337576),
-    },
-    /*
-    {
-      "parkingName": "BtwMiddlePark",
-      "parkingLoc": LatLng(28.38385457510328, 36.48241674909716),
-    },
-    {
-      "parkingName": "NorthPark",
-      "parkingLoc": LatLng(28.391850748988013, 36.478448742014166),
-    },
-    */
-    {
-      "parkingName": "AbvNorthPark",
-      "parkingLoc": LatLng(28.394981997394027, 36.477801571592586),
-    },
-    {
-      "parkingName": "temp1",
-      "parkingLoc": LatLng(28.391048436166116, 36.478019580309514),
-    },
-    {
-      "parkingName": "nearresho",
-      "parkingLoc": LatLng(28.39407811999997, 36.47768698639167),
-    },
-    /*
-    {
-      "parkingName": "faiezrashedy",
-      "parkingLoc": LatLng(28.373652902944748, 36.474148326350225),
-    },
-    {
-      "parkingName": "shareaafaculty",
-      "parkingLoc": LatLng(28.37391046232078, 36.47226390499414),
-    },
-    */
   ];
 
   @override
@@ -203,11 +165,13 @@ class _MapScreenState extends State<MapScreen> {
           Provider.of<ParkingProvider>(context, listen: false)
               .setParkingSlots(selectedSlots);
 
+          Provider.of<ParkingProvider>(context, listen: false)
+              .setParkingID(item["parkingName"]);
+
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ParkingSlotsScreen(),
-              // parkingName: item['parkingName'], parkingLoc: selectedSlots
+              builder: (context) => ParkingBookingPage(),
             ),
           );
         },
