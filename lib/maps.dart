@@ -105,7 +105,7 @@ class _MapScreenState extends State<MapScreen> {
       parkingPlaces = snapshot.docs
           .map((doc) {
             final data = doc.data();
-            print('Fetched data: $data'); // Print fetched data
+            print('Fetched data: ${data['parking_id']}'); // Print fetched data
             final location = data['location'] as Map<String, dynamic>?;
             final lat = location?['lat'] as double?;
             final long = location?['lng'] as double?;
@@ -195,8 +195,8 @@ class _MapScreenState extends State<MapScreen> {
           final parkingProvider =
               Provider.of<ParkingProvider>(context, listen: false);
 
-          // parkingProvider.setParkingSlots(selectedSlots);
-          parkingProvider.fetchSlots(parkingProvider.parkID);
+          parkingProvider.setParkingSlots(selectedSlots);
+          // parkingProvider.fetchSlots(parkingProvider.parkID);
 
           parkingProvider.setParkingID(item["parkingID"]);
 

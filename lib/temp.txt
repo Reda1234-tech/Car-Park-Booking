@@ -284,3 +284,14 @@ class DashedBorderPainter extends CustomPainter {
                 //                 'min': selectedMinutes
                 //               })),
                 // );
+
+// Perform confirmation action here
+                // Provider.of<ParkingProvider>(context, listen: true)
+                //     .addNewBooked(ParkBooking(
+                //         parkingID:
+                //             Provider.of<ParkingProvider>(context, listen: true)
+                //                 .parkID,
+                //         slotNumber: slotNumber,
+                //         date: selectedDate,
+                //         duration: selectedDuration,
+                //         userID: "temp"));

@@ -2,25 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'maps.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => ParkingProvider(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SplashPage(),
-      ),
-    ),
-  );
-}
 
 class SplashPage extends StatelessWidget {
   @override
@@ -31,7 +15,6 @@ class SplashPage extends StatelessWidget {
     double imageSize = screenWidth * 0.5;
     double fontSize = screenWidth * 0.08;
 
-    // Navigate to the next page after 5 seconds
     Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
@@ -72,26 +55,26 @@ List<ParkBooking> bookings = [
   ParkBooking(
       date: DateTime(2025, 2, 3, 10, 0),
       duration: {'hour': 2, 'min': 30},
-      parkingID: "downtown_parking",
-      slotNumber: "G1",
+      parkingID: "nearresho",
+      slotNumber: "ت-1",
       userID: "user123"),
   ParkBooking(
       date: DateTime(2025, 2, 4, 11, 0),
       duration: {'hour': 3, 'min': 0},
-      parkingID: "downtown_parking",
-      slotNumber: "A2",
+      parkingID: "nearresho",
+      slotNumber: "ب-1",
       userID: "user123"),
   ParkBooking(
       date: DateTime(2025, 2, 4, 11, 0),
       duration: {'hour': 1, 'min': 30},
-      parkingID: "downtown_parking",
-      slotNumber: "A1",
+      parkingID: "nearresho",
+      slotNumber: "أ-3",
       userID: "user456"),
   ParkBooking(
       date: DateTime(2025, 2, 3, 12, 0),
       duration: {'hour': 1, 'min': 30},
-      parkingID: "downtown_parking",
-      slotNumber: "A2",
+      parkingID: "nearresho",
+      slotNumber: "ب-3",
       userID: "user456"),
   ParkBooking(
       date: DateTime(2025, 2, 3, 10, 0),
@@ -100,8 +83,6 @@ List<ParkBooking> bookings = [
       slotNumber: "B1",
       userID: "user456"),
 ];
-
-//
 
 class ParkBooking {
   String parkingID;
@@ -142,6 +123,7 @@ class ParkingProvider extends ChangeNotifier {
   // Set the initial list of slots (can be dynamic or from an API)
   void setParkingSlots(List<ParkingSlot> newSlots) {
     _slots = newSlots;
+
     notifyListeners();
   }
 
@@ -150,34 +132,41 @@ class ParkingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addNewBooked(ParkBooking newBookedSlot) {
-    bookedSlots.add(newBookedSlot);
-    notifyListeners();
-  }
-
   void setParkingID(String parkingID) {
     _parkID = parkingID;
+
     notifyListeners();
   }
 
   Future<void> fetchSlots(String parkingID) async {
     final firestore = FirebaseFirestore.instance;
-    final snapshot = await firestore
-        .collection('slots')
-        .where('parking_id', isEqualTo: parkingID)
-        .get();
+    try {
+      final snapshot = await firestore
+          .collection('slots')
+          .where('parking_id', isEqualTo: parkingID)
+          .get();
 
-    _slots = snapshot.docs.map((doc) {
-      final data = doc.data();
-      return ParkingSlot(
-        parkingID: data['parking_id'],
-        area: data['area'], // Ensure 'area' is a Map<String, dynamic>
-        number: data['number'],
-      );
-    }).toList();
+      _slots = snapshot.docs.map((doc) {
+        final data = doc.data();
+
+        // Convert 'area' to Map<String, double>
+        final Map<String, double> area = (data['area'] as Map<String, dynamic>)
+            .map((key, value) => MapEntry(key, (value as num).toDouble()));
+
+        return ParkingSlot(
+          parkingID: data['parking_id'],
+          area: area,
+          number: data['number'],
+        );
+      }).toList();
+    } catch (e) {
+      print('Error in fetching slots: $e');
+    }
 
     notifyListeners();
   }
+
+  //Fetch all bookings
 
   // Book a slot
   void bookSlot(String id, int hours, int minutes, String date) {
@@ -190,4 +179,56 @@ class ParkingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> addBooking(String userId, String parkingId, String slotNumberr,
+      DateTime date, Map<String, int> duration) async {
+    try {
+      // Reference to the bookings collection
+      CollectionReference bookingsRef =
+          FirebaseFirestore.instance.collection('bookings');
+
+      // Add booking document
+      DocumentReference docRef = await bookingsRef.add({
+        'user_id': userId,
+        'parking_id': parkingId, // Link to the parking place
+        'slot_number': slotNumberr, // Link to the slot
+        'date': date,
+        'duration': duration,
+      });
+
+      // Check if the document was added successfully
+      if (docRef.id.isNotEmpty) {
+        print('Booking added successfully with ID: ${docRef.id}');
+        // FETCH ALL BOOKINGS
+        // TEMP ADD
+        bookings.add(ParkBooking(
+            date: date,
+            duration: duration,
+            parkingID: parkingId,
+            slotNumber: slotNumberr,
+            userID: userId));
+        notifyListeners();
+      } else {
+        print('Booking failed: Document reference is empty.');
+      }
+    } catch (e) {
+      print('Error adding booking: $e');
+    }
+  }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ParkingProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashPage(), // Set SplashPage as the initial screen
+      ),
+    ),
+  );
 }
