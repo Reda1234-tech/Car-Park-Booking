@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:async';
-import 'parking_booking_page_copy.dart';
+import 'parking_booking_page.dart';
 import 'package:provider/provider.dart';
 import 'main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

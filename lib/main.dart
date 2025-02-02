@@ -245,6 +245,77 @@ class ParkingProvider extends ChangeNotifier {
       print('Error adding booking: $e');
     }
   }
+
+  Future<void> extendBookingDuration(
+      String bookingId, int extraHours, int extraMinutes) async {
+    try {
+      // Reference to the specific booking document
+      DocumentReference bookingRef =
+          FirebaseFirestore.instance.collection('bookings').doc(bookingId);
+
+      // Get the current booking data
+      DocumentSnapshot bookingSnapshot = await bookingRef.get();
+
+      if (!bookingSnapshot.exists) {
+        print("Booking not found!");
+        return;
+      }
+
+      // Extract the current duration and update it
+      Map<String, int> currentDuration =
+          Map<String, int>.from(bookingSnapshot['duration']);
+
+      // Get the existing hours and minutes
+      int updatedHours = currentDuration['hour'] ?? 0;
+      int updatedMinutes = currentDuration['min'] ?? 0;
+
+      // Add extra duration
+      updatedHours += extraHours;
+      updatedMinutes += extraMinutes;
+
+      // Handle overflow of minutes (e.g., 90 min -> 1 hour 30 min)
+      if (updatedMinutes >= 60) {
+        updatedHours += updatedMinutes ~/ 60; // Convert excess minutes to hours
+        updatedMinutes = updatedMinutes % 60; // Keep only remaining minutes
+      }
+
+      // Update Firestore
+      await bookingRef.update({
+        'duration': {
+          'hour': updatedHours,
+          'min': updatedMinutes,
+        }
+      });
+
+      print(
+          "Booking duration extended by $extraHours hours and $extraMinutes minutes.");
+      print("New duration: $updatedHours hours and $updatedMinutes minutes.");
+    } catch (e) {
+      print("Error extending booking duration: $e");
+    }
+  }
+
+  Future<void> deleteBooking(String bookingId) async {
+    try {
+      // Reference to the specific booking document
+      DocumentReference bookingRef =
+          FirebaseFirestore.instance.collection('bookings').doc(bookingId);
+
+      // Check if the booking exists before attempting to delete
+      DocumentSnapshot bookingSnapshot = await bookingRef.get();
+
+      if (!bookingSnapshot.exists) {
+        print("Booking not found!");
+        return;
+      }
+
+      // Delete the document
+      await bookingRef.delete();
+      print("Booking with ID: $bookingId has been successfully deleted.");
+    } catch (e) {
+      print("Error deleting booking: $e");
+    }
+  }
 }
 
 void main() async {
