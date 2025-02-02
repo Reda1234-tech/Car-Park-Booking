@@ -24,7 +24,7 @@ class SplashPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor:
-          Color.fromRGBO(103, 83, 164, 1), // Splash screen background color
+      Color.fromRGBO(103, 83, 164, 1), // Splash screen background color
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
