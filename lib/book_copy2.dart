@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'parking_booking_page.dart';
+import "./main.dart";
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
-import 'main.dart';
-// import './current_reserve_details.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +16,7 @@ void main() async {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: ParkingSlotsScreen(
-          bookDate: DateTime.now(),
+          bookDate: DateTime(2025, 1, 30, 11, 0),
           bookDuration: {'hour': 2, 'min': 30},
         ),
       ),
@@ -24,7 +24,14 @@ void main() async {
   );
 }
 
+String entrySlot = 'A-1';
+String exitSlot = 'C-2';
+// Static set of reserved slots
+Set<String> reservedSlots = {'A-1', 'B-4'};
+
 class ParkingSlotsScreen extends StatelessWidget {
+  // final List<ParkingSlot> parkingLoc;
+  // final String parkingID;
   final DateTime bookDate;
   final Map<String, int> bookDuration;
 
@@ -33,7 +40,7 @@ class ParkingSlotsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-// addParkingPlaces();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Parking Slots"),
@@ -193,14 +200,23 @@ class _buildGridViewState extends State<buildGridView> {
             ),
             ElevatedButton(
               onPressed: () {
-                final parkingProvider =
-                    Provider.of<ParkingProvider>(context, listen: false);
-
-                // adding to db
-                parkingProvider.addBooking("user123", parkingProvider.parkID,
-                    slotNumber, selectedDate, selectedDuration);
-
+                // Perform confirmation action here
+                // Provider.of<ParkingProvider>(context, listen: true)
+                //     .addNewBooked(ParkBooking(
+                //         parkingID:
+                //             Provider.of<ParkingProvider>(context, listen: true)
+                //                 .parkID,
+                //         slotNumber: slotNumber,
+                //         date: selectedDate,
+                //         duration: selectedDuration,
+                //         userID: "temp"));
                 Navigator.of(context).pop();
+                // ADD TO DB
+
+                print("Confirmed!");
+
+// addBooking(slotNumber,selectedDuration,selectedDate,"user123",)
+                // THEN RETURN TO MAIN
               },
               child: Text("Confirm"),
             ),
@@ -213,40 +229,35 @@ class _buildGridViewState extends State<buildGridView> {
   @override
   Widget build(BuildContext context) {
     final parkingProvider = Provider.of<ParkingProvider>(context);
-    bool areThereSlots = true;
 
-    // Fetch slots if not already fetched
-    print('here');
     print(parkingProvider.slots);
     if (parkingProvider.slots.isEmpty) {
-      // parkingProvider.setParkingSlots([
+      // parkingProvider.slots = [
       //   ParkingSlot(
-      //       parkingID: 'nearresho',
+      //       parkingID: 'downtown_parking',
       //       area: {'width': 500, 'height': 200},
       //       number: "G1"),
       //   ParkingSlot(
-      //       parkingID: 'nearresho',
+      //       parkingID: 'downtown_parking',
       //       area: {'width': 400, 'height': 300},
       //       number: "A2"),
       //   ParkingSlot(
-      //       parkingID: 'nearresho',
+      //       parkingID: 'downtown_parking',
       //       area: {'width': 300, 'height': 500},
       //       number: "B1"),
       //   ParkingSlot(
-      //       parkingID: 'nearresho',
+      //       parkingID: 'downtown_parking',
       //       area: {'width': 600, 'height': 100},
       //       number: "C1"),
-      // ]);
+      // ];
 
       parkingProvider.fetchSlots(parkingProvider.parkID);
     }
 
-    // Filter bookings for the selected parking place
+    List<String> reservedSlots = []; //contains ID
+
     var selectedBookings =
         bookings.where((item) => item.parkingID == parkingProvider.parkID);
-
-    List<String> reservedSlots = []; // Contains IDs of reserved slots
-    List<String> userBookedSlots = []; // Contains IDs of user booked slots
 
     DateTime requestedStart = widget.bookDate;
     DateTime requestedEnd = requestedStart.add(Duration(
@@ -254,18 +265,12 @@ class _buildGridViewState extends State<buildGridView> {
       minutes: widget.bookDuration['min'] ?? 0,
     ));
 
-    // Check for overlapping bookings
     for (var booking in selectedBookings) {
       DateTime bookingStart = booking.date;
       DateTime bookingEnd = bookingStart.add(Duration(
         hours: booking.duration['hour'] ?? 0,
         minutes: booking.duration['min'] ?? 0,
       ));
-
-      if (booking.userID == "user123") {
-        userBookedSlots.add(booking.slotNumber);
-      }
-      //if its the user one and want to book will be blocked also
 
       bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
           requestedEnd.isAfter(bookingStart);
@@ -274,14 +279,7 @@ class _buildGridViewState extends State<buildGridView> {
         reservedSlots.add(booking.slotNumber);
       }
     }
-
-    print('reserved');
-    print(reservedSlots);
-
-    if (parkingProvider.slots.isEmpty) areThereSlots = false;
-
-    //  if(selectedBookings.isEmpty)
-    // return Text("No slots available");
+    if (selectedBookings.isEmpty) return Text("No slots available");
 
     return GridView.builder(
       physics: BouncingScrollPhysics(),
@@ -296,88 +294,100 @@ class _buildGridViewState extends State<buildGridView> {
       itemBuilder: (context, index) {
         ParkingSlot slot = parkingProvider.slots[index];
         bool isReserved = reservedSlots.contains(slot.number);
-        bool isUserReserve = userBookedSlots.contains(slot.number);
 
         return GestureDetector(
-          onTap: isUserReserve
-              ? () {
-                  //GO_TO_EXTEND
-                  // CurrentReservePage(slotName: slot.number);
-                }
+          onTap: isReserved
+              ? null
               : () {
+                  // Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //         builder: (context) => ParkingBookingPage())
+                  // builder: (context) => ParkingBookingPage(
+                  //     targetSlot: slot, slotID: index)),
+                  // );
                   _showBookingDetails(context, slot.number, widget.bookDuration,
                       widget.bookDate, parkingProvider);
                 },
           child: Container(
-              height: 120,
-              width: 200,
-              decoration: BoxDecoration(
-                  color: isReserved
-                      ? Colors.grey.withOpacity(0.8)
-                      : Colors.transparent,
-                  border: Border.all(color: Color.fromRGBO(103, 83, 164, 1)),
-                  borderRadius: BorderRadius.circular(8)),
-              child: (areThereSlots)
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(slot.number,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        getResponsiveFontSize(context, 0.03),
-                                  )),
-                            ),
-                            SizedBox(width: 10),
-                            Text("${slot.area['width']}x${slot.area['height']}",
-                                style: TextStyle(
-                                    color: Color.fromRGBO(103, 83, 164, 1))),
-                            if (isUserReserve) ...[
-                              SizedBox(width: 10),
-                              Text(
-                                  // "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
-                                  "Yours",
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize:
-                                        getResponsiveFontSize(context, 0.02),
-                                  )),
-                            ]
-                          ],
-                        ),
-                        if (isReserved) ...[
-                          Container(
-                            height: getResponsiveImgSize(context, 0.25),
-                            width: 220,
-                            child: Image.asset(
-                              'assets/images/car_elevation2.png',
-                            ),
-                          ),
-                        ],
-                      ],
-                    )
-                  : Center(child: Text("No slots to show"))),
+            height: 120,
+            width: 200,
+            decoration: BoxDecoration(
+                color: isReserved
+                    ? Colors.grey.withOpacity(0.8)
+                    : Colors.transparent,
+                border: Border.all(color: Color.fromRGBO(103, 83, 164, 1)),
+                borderRadius: BorderRadius.circular(8)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(slot.number,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: getResponsiveFontSize(context, 0.03),
+                          )),
+                    ),
+                    SizedBox(width: 10),
+                    Text("${slot.area['width']}x${slot.area['height']}",
+                        style:
+                            TextStyle(color: Color.fromRGBO(103, 83, 164, 1))),
+                    if (isReserved) ...[
+                      SizedBox(width: 10),
+                      // Text(
+                      // "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
+                      // style: TextStyle(
+                      //   color: Colors.black,
+                      //   fontSize: getResponsiveFontSize(context, 0.03),
+                      // )),
+                    ]
+                  ],
+                ),
+                if (isReserved) ...[
+                  Container(
+                    height: getResponsiveImgSize(context, 0.25),
+                    width: 220,
+                    child: Image.asset(
+                      'assets/images/car_elevation2.png',
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
         );
       },
     );
   }
 }
 
-// Placeholder for ParkingBookingPage
-class ParkingBookingPage extends StatelessWidget {
+class DashedLinePainter extends CustomPainter {
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Booking Page"),
-      ),
-      body: Center(
-        child: Text("Booking Page Placeholder"),
-      ),
-    );
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 4
+      ..style = PaintingStyle.stroke;
+
+    double dashHeight = 90;
+    double dashSpace = 50;
+    double startY = 0;
+
+    // Draw only the center dashed line
+    double centerX = size.width / 2;
+
+    while (startY < size.height) {
+      canvas.drawLine(
+          Offset(centerX, startY), Offset(centerX, startY + dashHeight), paint);
+      startY += dashHeight + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
   }
 }
