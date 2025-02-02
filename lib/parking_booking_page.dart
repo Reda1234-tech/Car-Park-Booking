@@ -2,9 +2,12 @@ import 'package:car_park_booking/maps.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
 import 'package:flutter/services.dart';
 import './book.dart';
 import 'main.dart';
+
+
 // import 'package:gif/gif.dart';
 
 // void main() {
@@ -111,6 +114,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
     }
   }
 
+
   void _showBookingDetails(BuildContext context) {
     int selectedHours = int.tryParse(hourController.text) ?? 0;
     int selectedMinutes = int.tryParse(minuteController.text) ?? 0;
@@ -164,11 +168,15 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book Parking Details'),
+
+        title: Text(
+            'Book Parking Details for ${Provider.of<ParkingProvider>(context).parkID}'),
+
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -206,7 +214,8 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
               SizedBox(height: 16),
 
               // Start time selection
-              Text("Start hour",
+
+              Text("Start Time",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               GestureDetector(

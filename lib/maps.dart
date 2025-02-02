@@ -105,10 +105,10 @@ class _MapScreenState extends State<MapScreen> {
       parkingPlaces = snapshot.docs
           .map((doc) {
             final data = doc.data();
-            print('Fetched data: $data'); // Print fetched data
+            print('Fetched data: ${data['parking_id']}'); // Print fetched data
             final location = data['location'] as Map<String, dynamic>?;
             final lat = location?['lat'] as double?;
-            final long = location?['long'] as double?;
+            final long = location?['lng'] as double?;
 
             if (lat == null || long == null) {
               print('Invalid location data for ${data['name']}');
@@ -116,7 +116,7 @@ class _MapScreenState extends State<MapScreen> {
             }
 
             return {
-              "parkingName": data['name'],
+              "parkingID": data['parking_id'],
               "parkingLoc": LatLng(lat, long),
             };
           })
@@ -166,11 +166,11 @@ class _MapScreenState extends State<MapScreen> {
 
   List<Map<String, dynamic>> parkingPlaces = [
     {
-      "parkingName": "downtown_parking",
+      "parkingID": "downtown_parking",
       "parkingLoc": LatLng(28.381887070530755, 36.48516313513801),
     },
     {
-      "parkingName": "feer",
+      "parkingID": "feer",
       "parkingLoc": LatLng(28.38430764818877, 36.48233091840871),
     },
   ];
@@ -179,12 +179,12 @@ class _MapScreenState extends State<MapScreen> {
   Widget build(BuildContext context) {
     markers = parkingPlaces.where((item) => item != null).map((item) {
       return Marker(
-        markerId: MarkerId(item['parkingName']),
+        markerId: MarkerId(item['parkingID']),
         position: item['parkingLoc'],
         onTap: () {
           List<ParkingSlot> selectedSlots = [];
           var selectedParking = parkingLoc.firstWhere(
-            (p) => p["parkName"] == item["parkingName"],
+            (p) => p["parkName"] == item["parkingID"],
             orElse: () => {},
           );
 
@@ -192,12 +192,13 @@ class _MapScreenState extends State<MapScreen> {
             selectedSlots =
                 List<ParkingSlot>.from(selectedParking["parkSlots"]);
           }
+          final parkingProvider =
+              Provider.of<ParkingProvider>(context, listen: false);
 
-          Provider.of<ParkingProvider>(context, listen: false)
-              .setParkingSlots(selectedSlots);
+          parkingProvider.setParkingSlots(selectedSlots);
+          // parkingProvider.fetchSlots(parkingProvider.parkID);
 
-          Provider.of<ParkingProvider>(context, listen: false)
-              .setParkingID(item["parkingName"]);
+          parkingProvider.setParkingID(item["parkingID"]);
 
           Navigator.push(
             context,
@@ -245,7 +246,7 @@ class _MapScreenState extends State<MapScreen> {
                         initialCameraPosition: CameraPosition(
                           target:
                               LatLng(_latitude, _longitude), // Center of campus
-                          zoom: 14, // Default zoom level
+                          zoom: 15,
                         ),
                         buildingsEnabled: true,
                         compassEnabled: true,
