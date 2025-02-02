@@ -2,6 +2,7 @@
     {
       "parkingName": "faiezrashedy",
       "parkingLoc": LatLng(28.373652902944748, 36.474148326350225),
+      "
     },
     {
       "parkingName": "shareaafaculty",
@@ -39,4 +40,4 @@
     {
       "parkingName": "nearresho",
       "parkingLoc": LatLng(28.39407811999997, 36.47768698639167),
-    },
+    }

@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+
+
   );
   runApp(
     ChangeNotifierProvider(
@@ -96,12 +99,13 @@ class ParkingSlotsScreen extends StatelessWidget {
   final DateTime bookDate;
   final Map<String, int> bookDuration;
 
+
   ParkingSlotsScreen({required this.bookDate, required this.bookDuration});
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
+// addParkingPlaces();
     return Scaffold(
       appBar: AppBar(
         title: Text("Parking Slots"),
@@ -277,6 +281,7 @@ class _buildGridViewState extends State<buildGridView> {
         bool isReserved = reservedSlots.contains(slot.number);
 
         return GestureDetector(
+
           onTap: isReserved
               ? null
               : () {
