@@ -167,6 +167,36 @@ class ParkingProvider extends ChangeNotifier {
   }
 
   //Fetch all bookings
+  Future<List<Map<String, dynamic>>> fetchBookings(String parkingId) async {
+    try {
+      // Reference to the bookings collection
+      CollectionReference bookingsRef =
+          FirebaseFirestore.instance.collection('bookings');
+
+      // Query the collection for bookings matching the parking ID
+      QuerySnapshot snapshot =
+          await bookingsRef.where('parking_id', isEqualTo: parkingId).get();
+
+      // Convert documents into a list of maps
+      List<Map<String, dynamic>> bookings = snapshot.docs.map((doc) {
+        return {
+          'id': doc.id, // Document ID
+          'user_id': doc['user_id'],
+          'parking_id': doc['parking_id'],
+          'slot_number': doc['slot_number'],
+          'date': (doc['date'] as Timestamp)
+              .toDate(), // Convert Firestore Timestamp to DateTime
+          'duration': Map<String, int>.from(doc['duration']),
+        };
+      }).toList();
+
+      print('Fetched ${bookings.length} bookings for parking ID: $parkingId');
+      return bookings;
+    } catch (e) {
+      print('Error fetching bookings: $e');
+      return [];
+    }
+  }
 
   // Book a slot
   void bookSlot(String id, int hours, int minutes, String date) {

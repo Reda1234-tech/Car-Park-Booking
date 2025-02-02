@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'main.dart';
-import './current_reserve_details.dart';
+// import './current_reserve_details.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
