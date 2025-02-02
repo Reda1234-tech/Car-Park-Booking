@@ -2,9 +2,25 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
 import 'maps.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ParkingProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashPage(),
+      ),
+    ),
+  );
+}
 
 class SplashPage extends StatelessWidget {
   @override
@@ -117,12 +133,15 @@ class ParkingSlot {
 
 class ParkingProvider extends ChangeNotifier {
   List<ParkBooking> bookedSlots = [];
-  List<ParkingSlot> slots = [];
-  String parkID = "";
+  List<ParkingSlot> _slots = [];
+  String _parkID = "downtown_parking";
+
+  List<ParkingSlot> get slots => _slots;
+  String get parkID => _parkID;
 
   // Set the initial list of slots (can be dynamic or from an API)
   void setParkingSlots(List<ParkingSlot> newSlots) {
-    slots = newSlots;
+    _slots = newSlots;
     notifyListeners();
   }
 
@@ -137,7 +156,26 @@ class ParkingProvider extends ChangeNotifier {
   }
 
   void setParkingID(String parkingID) {
-    parkID = parkingID;
+    _parkID = parkingID;
+    notifyListeners();
+  }
+
+  Future<void> fetchSlots(String parkingID) async {
+    final firestore = FirebaseFirestore.instance;
+    final snapshot = await firestore
+        .collection('slots')
+        .where('parking_id', isEqualTo: parkingID)
+        .get();
+
+    _slots = snapshot.docs.map((doc) {
+      final data = doc.data();
+      return ParkingSlot(
+        parkingID: data['parking_id'],
+        area: data['area'], // Ensure 'area' is a Map<String, dynamic>
+        number: data['number'],
+      );
+    }).toList();
+
     notifyListeners();
   }
 
@@ -152,20 +190,4 @@ class ParkingProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-}
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => ParkingProvider(),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SplashPage(), // Set SplashPage as the initial screen
-      ),
-    ),
-  );
 }

@@ -108,7 +108,7 @@ class _MapScreenState extends State<MapScreen> {
             print('Fetched data: $data'); // Print fetched data
             final location = data['location'] as Map<String, dynamic>?;
             final lat = location?['lat'] as double?;
-            final long = location?['long'] as double?;
+            final long = location?['lng'] as double?;
 
             if (lat == null || long == null) {
               print('Invalid location data for ${data['name']}');
@@ -192,12 +192,13 @@ class _MapScreenState extends State<MapScreen> {
             selectedSlots =
                 List<ParkingSlot>.from(selectedParking["parkSlots"]);
           }
+          final parkingProvider =
+              Provider.of<ParkingProvider>(context, listen: false);
 
-          Provider.of<ParkingProvider>(context, listen: false)
-              .setParkingSlots(selectedSlots);
+          // parkingProvider.setParkingSlots(selectedSlots);
+          parkingProvider.fetchSlots(parkingProvider.parkID);
 
-          Provider.of<ParkingProvider>(context, listen: false)
-              .setParkingID(item["parkingID"]);
+          parkingProvider.setParkingID(item["parkingID"]);
 
           Navigator.push(
             context,
@@ -245,7 +246,7 @@ class _MapScreenState extends State<MapScreen> {
                         initialCameraPosition: CameraPosition(
                           target:
                               LatLng(_latitude, _longitude), // Center of campus
-                          zoom: 14, // Default zoom level
+                          zoom: 15,
                         ),
                         buildingsEnabled: true,
                         compassEnabled: true,

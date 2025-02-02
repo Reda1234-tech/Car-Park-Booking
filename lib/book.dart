@@ -2,29 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'parking_booking_page_copy.dart';
 import "main.dart";
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-// void main() {
-//   runApp(
-//     // MultiProvider(
-//     // providers: [
-//     //   ChangeNotifierProvider(create: (context) => ParkingProvider()),
-//     // ],
-//     // child:
-//     // ChangeNotifierProvider(
-//     //   create: (context) => ParkingProvider(),
-//     //   child:
-//     MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       home: ParkingSlotsScreen(
-//         // parkingID: "downtown_parking",
-//         bookDate: DateTime(2025, 1, 30, 11, 0),
-//         bookDuration: {'hour': 0, 'min': 30},
-//       ),
-//       // ),
-//     ),
-//     // ),
-//   );
-// }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ParkingProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: ParkingSlotsScreen(
+          bookDate: DateTime(2025, 1, 30, 11, 0),
+          bookDuration: {'hour': 2, 'min': 30},
+        ),
+      ),
+    ),
+  );
+}
 
 String entrySlot = 'A-1';
 String exitSlot = 'C-2';
@@ -42,8 +40,6 @@ class ParkingSlotsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
-    print(bookDate.hour);
 
     return Scaffold(
       appBar: AppBar(
@@ -230,25 +226,29 @@ class _buildGridViewState extends State<buildGridView> {
   @override
   Widget build(BuildContext context) {
     final parkingProvider = Provider.of<ParkingProvider>(context);
+
+    print(parkingProvider.slots);
     if (parkingProvider.slots.isEmpty) {
-      parkingProvider.slots = [
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 500, 'height': 200},
-            number: "G1"),
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 400, 'height': 300},
-            number: "A2"),
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 300, 'height': 500},
-            number: "B1"),
-        ParkingSlot(
-            parkingID: 'downtown_parking',
-            area: {'width': 600, 'height': 100},
-            number: "C1"),
-      ];
+      // parkingProvider.slots = [
+      //   ParkingSlot(
+      //       parkingID: 'downtown_parking',
+      //       area: {'width': 500, 'height': 200},
+      //       number: "G1"),
+      //   ParkingSlot(
+      //       parkingID: 'downtown_parking',
+      //       area: {'width': 400, 'height': 300},
+      //       number: "A2"),
+      //   ParkingSlot(
+      //       parkingID: 'downtown_parking',
+      //       area: {'width': 300, 'height': 500},
+      //       number: "B1"),
+      //   ParkingSlot(
+      //       parkingID: 'downtown_parking',
+      //       area: {'width': 600, 'height': 100},
+      //       number: "C1"),
+      // ];
+
+      parkingProvider.fetchSlots(parkingProvider.parkID);
     }
 
     List<String> reservedSlots = []; //contains ID
