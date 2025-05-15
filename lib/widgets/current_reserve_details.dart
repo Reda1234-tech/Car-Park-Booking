@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
+import '../untils/firebase_options.dart';
 import 'package:provider/provider.dart';
-import 'main.dart';
 import 'book.dart';
+import '../provider/parking_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -191,7 +191,7 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
           minutes: booking['booking_details'].duration['min'],
         ));
 
-        print('yes ${bookedStartTime} ${newEndTime} ${bookedEndTime}');
+        print('yes $bookedStartTime $newEndTime $bookedEndTime');
         print(currentBookingID);
         print(booking['id']);
         if (currentBookingID != booking['id'] &&
@@ -292,7 +292,7 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
                         widget.bookingID, additionalHours, additionalMinutes);
                   }
                 } catch (e) {
-                  print('error ${e}');
+                  print('error $e');
                 }
               },
             ),

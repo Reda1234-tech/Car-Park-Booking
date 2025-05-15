@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
+import 'untils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-
-
   );
   runApp(
     ChangeNotifierProvider(
@@ -99,8 +96,8 @@ class ParkingSlotsScreen extends StatelessWidget {
   final DateTime bookDate;
   final Map<String, int> bookDuration;
 
-
-  ParkingSlotsScreen({required this.bookDate, required this.bookDuration});
+  const ParkingSlotsScreen(
+      {super.key, required this.bookDate, required this.bookDuration});
 
   @override
   Widget build(BuildContext context) {
@@ -258,7 +255,7 @@ class _buildGridViewState extends State<buildGridView> {
                 slot.number == booking.slotNumber,
             orElse: () => ParkingSlot(parkingID: '', area: {}, number: ''));
 
-        if (slot != null && !reservedSlots.contains(slot.number)) {
+        if (!reservedSlots.contains(slot.number)) {
           reservedSlots.add(slot.number);
         }
       }
@@ -281,7 +278,6 @@ class _buildGridViewState extends State<buildGridView> {
         bool isReserved = reservedSlots.contains(slot.number);
 
         return GestureDetector(
-
           onTap: isReserved
               ? null
               : () {
@@ -328,7 +324,7 @@ class _buildGridViewState extends State<buildGridView> {
                   ],
                 ),
                 if (isReserved) ...[
-                  Container(
+                  SizedBox(
                     height: getResponsiveImgSize(context, 0.25),
                     width: 220,
                     child: Image.asset(
@@ -347,6 +343,8 @@ class _buildGridViewState extends State<buildGridView> {
 
 // Placeholder for ParkingBookingPage
 class ParkingBookingPage extends StatelessWidget {
+  const ParkingBookingPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

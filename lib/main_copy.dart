@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:provider/provider.dart';
-import 'maps.dart';
+import 'widgets/maps.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'untils/firebase_options.dart';
 
 class SplashPage extends StatelessWidget {
+  const SplashPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -24,7 +26,7 @@ class SplashPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor:
-      Color.fromRGBO(103, 83, 164, 1), // Splash screen background color
+          Color.fromRGBO(103, 83, 164, 1), // Splash screen background color
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

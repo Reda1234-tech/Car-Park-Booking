@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'maps.dart';
-import 'firebase_options.dart';
+import '../untils/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 
 // Initialize Firebase before running the app
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // Use the auto-generated options
+    options: DefaultFirebaseOptions
+        .currentPlatform, // Use the auto-generated options
   );
   runApp(const MyApp());
 }
@@ -19,7 +19,8 @@ void main() async {
 void _navigateToMapScreen(BuildContext context) {
   Navigator.push(
     context,
-    MaterialPageRoute(builder: (context) =>  MapScreen()), // Navigate to MapScreen
+    MaterialPageRoute(
+        builder: (context) => MapScreen()), // Navigate to MapScreen
   );
 }
 
@@ -35,9 +36,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 final GoogleSignIn _googleSignIn = GoogleSignIn(
-  clientId: '205984747203-o9a6f76ihpsv9dd6iaj197uh1uso1ref.apps.googleusercontent.com',
+  clientId:
+      '205984747203-o9a6f76ihpsv9dd6iaj197uh1uso1ref.apps.googleusercontent.com',
 );
 
 Future<bool> _signInWithGoogle() async {
@@ -45,7 +46,8 @@ Future<bool> _signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
     if (googleUser == null) return false; // User canceled
 
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
 
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
@@ -53,7 +55,8 @@ Future<bool> _signInWithGoogle() async {
     );
 
     // Sign in to Firebase
-    final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+    final userCredential =
+        await FirebaseAuth.instance.signInWithCredential(credential);
     final user = userCredential.user;
 
     if (user != null) {
@@ -75,7 +78,6 @@ Future<bool> _signInWithGoogle() async {
         });
       }
 
-
       return true;
     }
     return false;
@@ -88,8 +90,6 @@ Future<bool> _signInWithGoogle() async {
   }
 }
 
-
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -101,12 +101,13 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-
-
   Future<void> _signIn() async {
     String username = _usernameController.text.trim();
 
-    var userDoc = await FirebaseFirestore.instance.collection('Users').doc(username).get();
+    var userDoc = await FirebaseFirestore.instance
+        .collection('Users')
+        .doc(username)
+        .get();
 
     if (userDoc.exists) {
       // Navigate to MapScreen
@@ -131,7 +132,8 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 Image.asset('assets/images/sign_in-Photoroom.png', height: 300),
                 const SizedBox(height: 20),
-                const Text('Welcome back! Login to continue.', textAlign: TextAlign.center),
+                const Text('Welcome back! Login to continue.',
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 20),
                 _buildUsernameField(),
                 const SizedBox(height: 20),
@@ -146,25 +148,28 @@ class _LoginPageState extends State<LoginPage> {
                     foregroundColor: Colors.white, // Text color
                     minimumSize: const Size(150, 40), // Smaller button size
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                      borderRadius:
+                          BorderRadius.circular(10), // Rounded corners
                     ),
                   ),
-                  child: const Text('Login', style: TextStyle(fontSize: 16)), // Smaller font size
+                  child: const Text('Login',
+                      style: TextStyle(fontSize: 16)), // Smaller font size
                 ),
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
-
                   onPressed: () async {
                     final success = await _signInWithGoogle();
                     if (success) {
                       _navigateToMapScreen(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to sign in with Google.')),
+                        const SnackBar(
+                            content: Text('Failed to sign in with Google.')),
                       );
                     }
                   },
-                  icon: Image.asset('assets/images/google_logo.png', height: 20), // or use an icon
+                  icon: Image.asset('assets/images/google_logo.png',
+                      height: 20), // or use an icon
                   label: const Text('Sign in with Google'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -176,7 +181,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
                 RichText(
                   text: TextSpan(
@@ -192,7 +196,8 @@ class _LoginPageState extends State<LoginPage> {
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => const SignupPage()),
+                              MaterialPageRoute(
+                                  builder: (context) => const SignupPage()),
                             );
                           },
                         ),
@@ -219,8 +224,10 @@ class _LoginPageState extends State<LoginPage> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Username is required';
-        if (value.length < 4 || value.length > 15) return 'Username must be 4-15 characters';
-        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$').hasMatch(value)) {
+        if (value.length < 4 || value.length > 15)
+          return 'Username must be 4-15 characters';
+        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
+            .hasMatch(value)) {
           return 'Must include letters and numbers';
         }
         return null;
@@ -245,21 +252,24 @@ class _SignupPageState extends State<SignupPage> {
     String username = _usernameController.text.trim();
     String email = _nameController.text.trim();
 
-    var userDoc = await FirebaseFirestore.instance.collection('Users')
+    var userDoc = await FirebaseFirestore.instance
+        .collection('Users')
         .where('email', isEqualTo: email)
         .limit(1)
         .get();
 
-    if (!userDoc.docs.isEmpty) {
+    if (userDoc.docs.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('User already exists!')),
       );
     } else {
-      final newUserRef = FirebaseFirestore.instance.collection('Users').doc(); // Auto-generated ID
+      final newUserRef = FirebaseFirestore.instance
+          .collection('Users')
+          .doc(); // Auto-generated ID
       await newUserRef.set({
-        'user_id': newUserRef.id,      // Save the auto-generated ID as user_id
+        'user_id': newUserRef.id, // Save the auto-generated ID as user_id
         'name': username,
-        'email': email,                // Include the email
+        'email': email, // Include the email
       });
 
       // Show success message
@@ -285,7 +295,8 @@ class _SignupPageState extends State<SignupPage> {
               children: [
                 Image.asset('assets/images/sign_in-Photoroom.png', height: 300),
                 const SizedBox(height: 20),
-                const Text('Sign up to use Easy Parking.', textAlign: TextAlign.center),
+                const Text('Sign up to use Easy Parking.',
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 20),
                 _buildTextField(controller: _nameController, label: 'Name'),
                 const SizedBox(height: 10),
@@ -302,12 +313,13 @@ class _SignupPageState extends State<SignupPage> {
                     foregroundColor: Colors.white, // Text color
                     minimumSize: const Size(150, 40), // Smaller button size
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                      borderRadius:
+                          BorderRadius.circular(10), // Rounded corners
                     ),
                   ),
-                  child: const Text('Sign Up', style: TextStyle(fontSize: 16)), // Smaller font size
+                  child: const Text('Sign Up',
+                      style: TextStyle(fontSize: 16)), // Smaller font size
                 ),
-
                 ElevatedButton.icon(
                   onPressed: () async {
                     final success = await _signInWithGoogle();
@@ -315,11 +327,13 @@ class _SignupPageState extends State<SignupPage> {
                       _navigateToMapScreen(context);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Failed to sign in with Google.')),
+                        const SnackBar(
+                            content: Text('Failed to sign in with Google.')),
                       );
                     }
                   },
-                  icon: Image.asset('assets/images/google_logo.png', height: 20), // or use an icon
+                  icon: Image.asset('assets/images/google_logo.png',
+                      height: 20), // or use an icon
                   label: const Text('Sign in with Google'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
@@ -370,8 +384,10 @@ class _SignupPageState extends State<SignupPage> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Username is required';
-        if (value.length < 4 || value.length > 15) return 'Username must be 4-15 characters';
-        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$').hasMatch(value)) {
+        if (value.length < 4 || value.length > 15)
+          return 'Username must be 4-15 characters';
+        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
+            .hasMatch(value)) {
           return 'Must include letters and numbers';
         }
         return null;
@@ -379,7 +395,8 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String label}) {
+  Widget _buildTextField(
+      {required TextEditingController controller, required String label}) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -388,7 +405,8 @@ class _SignupPageState extends State<SignupPage> {
           borderRadius: BorderRadius.circular(10), // Circular border
         ),
       ),
-      validator: (value) => value == null || value.isEmpty ? '$label is required' : null,
+      validator: (value) =>
+          value == null || value.isEmpty ? '$label is required' : null,
     );
   }
 }
@@ -418,9 +436,13 @@ class _HoverableTextState extends State<HoverableText> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           decoration: BoxDecoration(
-            color: _isHovered ? Colors.lightBlue[50] : Colors.transparent, // Light blue background on hover
+            color: _isHovered
+                ? Colors.lightBlue[50]
+                : Colors.transparent, // Light blue background on hover
             border: Border.all(
-              color: _isHovered ? Colors.blue : Colors.transparent, // Blue border on hover
+              color: _isHovered
+                  ? Colors.blue
+                  : Colors.transparent, // Blue border on hover
               width: 1, // Border width
             ),
             borderRadius: BorderRadius.circular(4),

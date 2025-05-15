@@ -1,12 +1,13 @@
-import 'package:car_park_booking/maps.dart';
+import 'package:car_park_booking/widgets/maps.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter/services.dart';
-import './book.dart';
-import 'main.dart';
+import 'book.dart';
+import '../main.dart';
 
+import '../provider/parking_provider.dart';
 
 // import 'package:gif/gif.dart';
 
@@ -25,6 +26,8 @@ import 'main.dart';
 // }
 
 class ParkingBookingPage extends StatefulWidget {
+  const ParkingBookingPage({super.key});
+
   // final int slotID;
   // late ParkingSlot targetSlot;
 
@@ -37,6 +40,7 @@ class ParkingBookingPage extends StatefulWidget {
 class _ParkingBookingPageState extends State<ParkingBookingPage> {
   // late GifController controller;
 
+  @override
   void initState() {
     super.initState();
     // controller = GifController(vsync: this);
@@ -114,7 +118,6 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
     }
   }
 
-
   void _showBookingDetails(BuildContext context) {
     int selectedHours = int.tryParse(hourController.text) ?? 0;
     int selectedMinutes = int.tryParse(minuteController.text) ?? 0;
@@ -168,15 +171,12 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-
         title: Text(
             'Book Parking Details for ${Provider.of<ParkingProvider>(context).parkID}'),
-
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -255,7 +255,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                       children: [
                         Column(
                           children: [
-                            Container(
+                            SizedBox(
                               width: 60,
                               child: TextFormField(
                                 controller: hourController,
@@ -289,7 +289,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
                         SizedBox(width: 16), // Adjust spacing
                         Column(
                           children: [
-                            Container(
+                            SizedBox(
                               width: 60,
                               child: TextFormField(
                                 controller: minuteController,
