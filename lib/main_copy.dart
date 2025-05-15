@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:provider/provider.dart';
 import 'widgets/maps.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'untils/firebase_options.dart';
+import 'utils/firebase_options.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});

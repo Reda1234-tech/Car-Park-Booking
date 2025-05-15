@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'untils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
+import 'utils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

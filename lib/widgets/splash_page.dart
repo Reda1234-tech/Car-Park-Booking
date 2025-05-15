@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'registration.dart';
+import 'login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+import './maps.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -14,10 +17,20 @@ class SplashPage extends StatelessWidget {
     double fontSize = screenWidth * 0.08;
 
     Future.delayed(Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // User is already signed in → go to home page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => MapScreen()), // or HomePage()
+        );
+      } else {
+        // User not signed in → go to login page
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      }
     });
 
     return Scaffold(
