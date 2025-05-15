@@ -40,4 +40,27 @@
     {
       "parkingName": "nearresho",
       "parkingLoc": LatLng(28.39407811999997, 36.47768698639167),
+
+    },
+
+
+    // parkingProvider.setParkingSlots([
+      //   ParkingSlot(
+      //       parkingID: 'nearresho',
+      //       area: {'width': 500, 'height': 200},
+      //       number: "G1"),
+      //   ParkingSlot(
+      //       parkingID: 'nearresho',
+      //       area: {'width': 400, 'height': 300},
+      //       number: "A2"),
+      //   ParkingSlot(
+      //       parkingID: 'nearresho',
+      //       area: {'width': 300, 'height': 500},
+      //       number: "B1"),
+      //   ParkingSlot(
+      //       parkingID: 'nearresho',
+      //       area: {'width': 600, 'height': 100},
+      //       number: "C1"),
+      // ]);
+
     }

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'main.dart';
-// import './current_reserve_details.dart';
+import './current_reserve_details.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,9 @@ class ParkingSlotsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+
 // addParkingPlaces();
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Parking Slots"),
@@ -147,14 +149,29 @@ class _buildGridViewState extends State<buildGridView> {
     return aspectRatio;
   }
 
+  late Future<List<Map<String, dynamic>>> _bookingsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // final parkingProvider = Provider.of<ParkingProvider>(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final parkingProvider =
+        Provider.of<ParkingProvider?>(context, listen: false);
+    _bookingsFuture = parkingProvider!.fetchBookings(parkingProvider.parkID);
+    print('chang');
+  }
+
   void _showBookingDetails(
       BuildContext context,
       String slotNumber,
       Map<String, int> selectedDuration,
       DateTime selectedDate,
       ParkingProvider provider) {
-    // int selectedHours = int.tryParse(hourController.text) ?? 0;
-    // int selectedMinutes = int.tryParse(minuteController.text) ?? 0;
     String formattedDuration =
         '${selectedDuration['hour']} hours ${selectedDuration['min']} minutes';
     String formattedDate =
@@ -163,6 +180,8 @@ class _buildGridViewState extends State<buildGridView> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final parkingProvider =
+            Provider.of<ParkingProvider>(context, listen: false);
         return AlertDialog(
           title: Text('Confirm Slot Booking'),
           content: Column(
@@ -174,7 +193,6 @@ class _buildGridViewState extends State<buildGridView> {
               // image: AssetImage(
               //   "images/img.gif",
               // ),
-
               // ),
               // SizedBox(height: 16),
               Text('Start Datetime: $formattedDate'),
@@ -193,9 +211,6 @@ class _buildGridViewState extends State<buildGridView> {
             ),
             ElevatedButton(
               onPressed: () {
-                final parkingProvider =
-                    Provider.of<ParkingProvider>(context, listen: false);
-
                 // adding to db
                 parkingProvider.addBooking("user123", parkingProvider.parkID,
                     slotNumber, selectedDate, selectedDuration);
@@ -216,154 +231,183 @@ class _buildGridViewState extends State<buildGridView> {
     bool areThereSlots = true;
 
     // Fetch slots if not already fetched
-    print('here');
-    print(parkingProvider.slots);
-    if (parkingProvider.slots.isEmpty) {
-      // parkingProvider.setParkingSlots([
-      //   ParkingSlot(
-      //       parkingID: 'nearresho',
-      //       area: {'width': 500, 'height': 200},
-      //       number: "G1"),
-      //   ParkingSlot(
-      //       parkingID: 'nearresho',
-      //       area: {'width': 400, 'height': 300},
-      //       number: "A2"),
-      //   ParkingSlot(
-      //       parkingID: 'nearresho',
-      //       area: {'width': 300, 'height': 500},
-      //       number: "B1"),
-      //   ParkingSlot(
-      //       parkingID: 'nearresho',
-      //       area: {'width': 600, 'height': 100},
-      //       number: "C1"),
-      // ]);
 
+    if (parkingProvider.slots.isEmpty) {
       parkingProvider.fetchSlots(parkingProvider.parkID);
     }
 
+    /*
     // Filter bookings for the selected parking place
-    var selectedBookings =
-        bookings.where((item) => item.parkingID == parkingProvider.parkID);
-
-    List<String> reservedSlots = []; // Contains IDs of reserved slots
-    List<String> userBookedSlots = []; // Contains IDs of user booked slots
-
-    DateTime requestedStart = widget.bookDate;
-    DateTime requestedEnd = requestedStart.add(Duration(
-      hours: widget.bookDuration['hour'] ?? 0,
-      minutes: widget.bookDuration['min'] ?? 0,
-    ));
-
-    // Check for overlapping bookings
-    for (var booking in selectedBookings) {
-      DateTime bookingStart = booking.date;
-      DateTime bookingEnd = bookingStart.add(Duration(
-        hours: booking.duration['hour'] ?? 0,
-        minutes: booking.duration['min'] ?? 0,
-      ));
-
-      if (booking.userID == "user123") {
-        userBookedSlots.add(booking.slotNumber);
-      }
-      //if its the user one and want to book will be blocked also
-
-      bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
-          requestedEnd.isAfter(bookingStart);
-
-      if (isOverlapping) {
-        reservedSlots.add(booking.slotNumber);
-      }
-    }
-
-    print('reserved');
-    print(reservedSlots);
 
     if (parkingProvider.slots.isEmpty) areThereSlots = false;
 
-    //  if(selectedBookings.isEmpty)
-    // return Text("No slots available");
+*/
 
-    return GridView.builder(
-      physics: BouncingScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: _getResponsiveCrossAxisCount(context),
-        mainAxisSpacing: _getResponsiveSpacing(context),
-        crossAxisSpacing: _getResponsiveSpacing(context),
-        childAspectRatio: _getResponsiveChildAspectRatio(context),
-      ),
-      padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-      itemCount: parkingProvider.slots.length,
-      itemBuilder: (context, index) {
-        ParkingSlot slot = parkingProvider.slots[index];
-        bool isReserved = reservedSlots.contains(slot.number);
-        bool isUserReserve = userBookedSlots.contains(slot.number);
+    return FutureBuilder<List<Map<String, dynamic>>>(
+        future: _bookingsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error fetching bookings'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No bookings available'));
+          } else {
+            List<Map<String, dynamic>> bookings = snapshot.data!;
 
-        return GestureDetector(
-          onTap: isUserReserve
-              ? () {
-                  //GO_TO_EXTEND
-                  // CurrentReservePage(slotName: slot.number);
+            // Filter bookings for the selected parking place
+            var selectedBookings = bookings.where((item) =>
+                item['booking_details'].parkingID == parkingProvider.parkID);
+
+            List<String> reservedSlots = []; // Contains IDs of reserved slots
+            List<String> userBookedSlots =
+                []; // Contains IDs of user booked slots
+            Map<String, dynamic> userBookingIDs = {};
+
+            DateTime requestedStart = widget.bookDate;
+            DateTime requestedEnd = requestedStart.add(Duration(
+              hours: widget.bookDuration['hour'] ?? 0,
+              minutes: widget.bookDuration['min'] ?? 0,
+            ));
+
+            // Check for overlapping bookings
+            for (var booking in selectedBookings) {
+              DateTime bookingStart = booking['booking_details'].date;
+              DateTime bookingEnd = bookingStart.add(Duration(
+                hours: booking['booking_details'].duration['hour'] ?? 0,
+                minutes: booking['booking_details'].duration['min'] ?? 0,
+              ));
+
+              bool isOverlapping = requestedStart.isBefore(bookingEnd) &&
+                  requestedEnd.isAfter(bookingStart);
+
+              if (isOverlapping) {
+                reservedSlots.add(booking['booking_details'].slotNumber);
+
+                if (booking['booking_details'].userID == "user123") {
+                  userBookedSlots.add(booking['booking_details'].slotNumber);
+                  userBookingIDs.addAll({
+                    booking['booking_details'].slotNumber: {
+                      'id': booking['id'],
+                      'reservedDate': booking['booking_details'].date,
+                      'reserveDuration': booking['booking_details'].duration
+                    }
+                  });
                 }
-              : () {
-                  _showBookingDetails(context, slot.number, widget.bookDuration,
-                      widget.bookDate, parkingProvider);
-                },
-          child: Container(
-              height: 120,
-              width: 200,
-              decoration: BoxDecoration(
-                  color: isReserved
-                      ? Colors.grey.withOpacity(0.8)
-                      : Colors.transparent,
-                  border: Border.all(color: Color.fromRGBO(103, 83, 164, 1)),
-                  borderRadius: BorderRadius.circular(8)),
-              child: (areThereSlots)
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Flexible(
-                              child: Text(slot.number,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        getResponsiveFontSize(context, 0.03),
-                                  )),
-                            ),
-                            SizedBox(width: 10),
-                            Text("${slot.area['width']}x${slot.area['height']}",
-                                style: TextStyle(
-                                    color: Color.fromRGBO(103, 83, 164, 1))),
-                            if (isUserReserve) ...[
-                              SizedBox(width: 10),
-                              Text(
-                                  // "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
-                                  "Yours",
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize:
-                                        getResponsiveFontSize(context, 0.02),
-                                  )),
-                            ]
-                          ],
-                        ),
-                        if (isReserved) ...[
-                          Container(
-                            height: getResponsiveImgSize(context, 0.25),
-                            width: 220,
-                            child: Image.asset(
-                              'assets/images/car_elevation2.png',
-                            ),
-                          ),
-                        ],
-                      ],
-                    )
-                  : Center(child: Text("No slots to show"))),
-        );
-      },
-    );
+              }
+            }
+
+            return GridView.builder(
+              physics: BouncingScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: _getResponsiveCrossAxisCount(context),
+                mainAxisSpacing: _getResponsiveSpacing(context),
+                crossAxisSpacing: _getResponsiveSpacing(context),
+                childAspectRatio: _getResponsiveChildAspectRatio(context),
+              ),
+              padding: EdgeInsets.fromLTRB(0, 8, 0, 0),
+              itemCount: parkingProvider.slots.length,
+              itemBuilder: (context, index) {
+                ParkingSlot slot = parkingProvider.slots[index];
+                bool isReserved = reservedSlots.contains(slot.number);
+                bool isUserReserve = userBookedSlots.contains(slot.number);
+
+                return Consumer<ParkingProvider>(
+                    builder: (context, parkProvider, child) {
+                  return GestureDetector(
+                    onTap: isReserved
+                        ? isUserReserve
+                            ? () {
+                                //GO_TO_EXTEND
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => CurrentReservePage(
+                                            bookingID:
+                                                userBookingIDs[slot.number]
+                                                    ['id']!,
+                                            slotName: slot.number,
+                                            reservedTime:
+                                                userBookingIDs[slot.number]
+                                                    ['reservedDate'],
+                                            duration:
+                                                userBookingIDs[slot.number]
+                                                    ['reserveDuration'],
+                                          )),
+                                );
+                              }
+                            : null
+                        : () {
+                            _showBookingDetails(
+                                context,
+                                slot.number,
+                                widget.bookDuration,
+                                widget.bookDate,
+                                parkingProvider);
+                          },
+                    child: Container(
+                        height: 120,
+                        width: 200,
+                        decoration: BoxDecoration(
+                            color: isReserved
+                                ? Colors.grey.withOpacity(0.8)
+                                : Colors.transparent,
+                            border: Border.all(
+                                color: Color.fromRGBO(103, 83, 164, 1)),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: (areThereSlots)
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Flexible(
+                                        child: Text(slot.number,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: getResponsiveFontSize(
+                                                  context, 0.03),
+                                            )),
+                                      ),
+                                      SizedBox(width: 10),
+                                      Text(
+                                          "${slot.area['width']}x${slot.area['height']}",
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(
+                                                  103, 83, 164, 1))),
+                                      if (isReserved && isUserReserve) ...[
+                                        SizedBox(width: 10),
+                                        Text(
+                                            // "${widget.bookDuration['hour']}h ${widget.bookDuration['min']}m",
+                                            "Yours",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: getResponsiveFontSize(
+                                                  context, 0.02),
+                                            )),
+                                      ]
+                                    ],
+                                  ),
+                                  if (isReserved) ...[
+                                    Container(
+                                      height:
+                                          getResponsiveImgSize(context, 0.25),
+                                      width: 220,
+                                      child: Image.asset(
+                                        'assets/images/car_elevation2.png',
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              )
+                            : Center(child: Text("No slots to show"))),
+                  );
+                });
+              },
+            );
+          }
+        });
   }
 }
 

@@ -295,3 +295,17 @@ class DashedBorderPainter extends CustomPainter {
                 //         date: selectedDate,
                 //         duration: selectedDuration,
                 //         userID: "temp"));
+
+void deleteItem(String itemId) async {
+    // bool? confirmDelete = _showDeleteConfirm();
+
+    // if (confirmDelete == true) {
+    //   // Proceed with deletion from Firestore or database
+    //   FirebaseFirestore.instance
+    //       .collection('your_collection')
+    //       .doc(itemId)
+    //       .delete()
+    //       .then((_) => print("Item deleted successfully"))
+    //       .catchError((error) => print("Error deleting item: $error"));
+    // }
+  }

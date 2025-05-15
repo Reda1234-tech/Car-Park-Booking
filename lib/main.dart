@@ -117,6 +117,7 @@ class ParkingProvider extends ChangeNotifier {
   List<ParkBooking> bookedSlots = [];
   List<ParkingSlot> _slots = [];
   String _parkID = "downtown_parking";
+  bool isLoading = true;
 
   List<ParkingSlot> get slots => _slots;
   String get parkID => _parkID;
@@ -182,12 +183,12 @@ class ParkingProvider extends ChangeNotifier {
       List<Map<String, dynamic>> bookings = snapshot.docs.map((doc) {
         return {
           'id': doc.id, // Document ID
-          'user_id': doc['user_id'],
-          'parking_id': doc['parking_id'],
-          'slot_number': doc['slot_number'],
-          'date': (doc['date'] as Timestamp)
-              .toDate(), // Convert Firestore Timestamp to DateTime
-          'duration': Map<String, int>.from(doc['duration']),
+          'booking_details': ParkBooking(
+              parkingID: doc['parking_id'],
+              slotNumber: doc['slot_number'],
+              date: (doc['date'] as Timestamp).toDate(),
+              duration: Map<String, int>.from(doc['duration']),
+              userID: doc['user_id'])
         };
       }).toList();
 
@@ -287,6 +288,7 @@ class ParkingProvider extends ChangeNotifier {
           'min': updatedMinutes,
         }
       });
+      notifyListeners();
 
       print(
           "Booking duration extended by $extraHours hours and $extraMinutes minutes.");
@@ -313,6 +315,7 @@ class ParkingProvider extends ChangeNotifier {
       // Delete the document
       await bookingRef.delete();
       print("Booking with ID: $bookingId has been successfully deleted.");
+      notifyListeners();
     } catch (e) {
       print("Error deleting booking: $e");
     }
