@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'parking_booking_page.dart';
 import 'package:provider/provider.dart';
-import 'main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../provider/parking_provider.dart';
+import '../model/park_slot.dart';
 
 // import 'package:geocoding/geocoding.dart';
 // import 'package:flutter_google_places/flutter_google_places.dart';
@@ -69,6 +71,8 @@ const kGoogleApiKey = "AIzaSyAIb-HJSutTY63dIxqAVYZ9dAl6fE-BsQA";
 // GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
 class ParkingApp extends StatelessWidget {
+  const ParkingApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -79,13 +83,15 @@ class ParkingApp extends StatelessWidget {
 }
 
 class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
+
   @override
   _MapScreenState createState() => _MapScreenState();
 }
 
 class _MapScreenState extends State<MapScreen> {
   GoogleMapController? _controller;
-  Set<Marker> markers = Set();
+  Set<Marker> markers = {};
 
   final double _latitude = 28.39412359758817;
   final double _longitude = 36.47677376620625;

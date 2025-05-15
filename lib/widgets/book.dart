@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
-import 'main.dart';
-import './current_reserve_details.dart';
+import '../untils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
+import 'current_reserve_details.dart';
+
+import '../provider/parking_provider.dart';
+import '../model/park_slot.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +30,8 @@ class ParkingSlotsScreen extends StatelessWidget {
   final DateTime bookDate;
   final Map<String, int> bookDuration;
 
-  ParkingSlotsScreen({required this.bookDate, required this.bookDuration});
+  const ParkingSlotsScreen(
+      {super.key, required this.bookDate, required this.bookDuration});
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +393,7 @@ class _buildGridViewState extends State<buildGridView> {
                                     ],
                                   ),
                                   if (isReserved) ...[
-                                    Container(
+                                    SizedBox(
                                       height:
                                           getResponsiveImgSize(context, 0.25),
                                       width: 220,
@@ -413,6 +416,8 @@ class _buildGridViewState extends State<buildGridView> {
 
 // Placeholder for ParkingBookingPage
 class ParkingBookingPage extends StatelessWidget {
+  const ParkingBookingPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
