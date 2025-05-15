@@ -12,7 +12,20 @@
           "package_name": "com.example.temp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "205984747203-f2ovh7oha94ll1aicjlq7kk670g11upi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.temp",
+            "certificate_hash": "2626dd574101f575254b15cde94e21da5f9de157"
+          }
+        },
+        {
+          "client_id": "205984747203-o9a6f76ihpsv9dd6iaj197uh1uso1ref.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDTbps3HBJ3fst2ahi93yxgamfYMiKQotU"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "205984747203-o9a6f76ihpsv9dd6iaj197uh1uso1ref.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "205984747203-72bsenjdhq7lt2qim2orlhkjrb62npma.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.carParkBooking"
+              }
+            }
+          ]
         }
       }
     }
