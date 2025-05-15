@@ -3,6 +3,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'maps.dart';
 import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
 
 // Initialize Firebase before running the app
 void main() async {
@@ -32,6 +35,61 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+final GoogleSignIn _googleSignIn = GoogleSignIn(
+  clientId: '205984747203-o9a6f76ihpsv9dd6iaj197uh1uso1ref.apps.googleusercontent.com',
+);
+
+Future<bool> _signInWithGoogle() async {
+  try {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    if (googleUser == null) return false; // User canceled
+
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+
+    // Sign in to Firebase
+    final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+    final user = userCredential.user;
+
+    if (user != null) {
+      final String email = user.email!;
+
+      // 🔍 Check if user already exists by email
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('Users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        // ❗️User not found, create a new document
+        await FirebaseFirestore.instance.collection('Users').doc(user.uid).set({
+          'user_id': user.uid,
+          'name': user.displayName ?? 'No Name',
+          'email': email,
+        });
+      }
+
+
+      return true;
+    }
+    return false;
+  } catch (e) {
+    print("Google sign-in error: $e");
+    return false;
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('Failed to sign in with Google.')),
+    // );
+  }
+}
+
+
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -42,6 +100,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+
 
   Future<void> _signIn() async {
     String username = _usernameController.text.trim();
@@ -91,6 +151,32 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   child: const Text('Login', style: TextStyle(fontSize: 16)), // Smaller font size
                 ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+
+                  onPressed: () async {
+                    final success = await _signInWithGoogle();
+                    if (success) {
+                      _navigateToMapScreen(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to sign in with Google.')),
+                      );
+                    }
+                  },
+                  icon: Image.asset('assets/images/google_logo.png', height: 20), // or use an icon
+                  label: const Text('Sign in with Google'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size(200, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(color: Colors.grey),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 20),
                 RichText(
                   text: TextSpan(
@@ -157,18 +243,23 @@ class _SignupPageState extends State<SignupPage> {
 
   Future<void> _signUp() async {
     String username = _usernameController.text.trim();
-    String name = _nameController.text.trim();
+    String email = _nameController.text.trim();
 
-    var userDoc = await FirebaseFirestore.instance.collection('Users').doc(username).get();
+    var userDoc = await FirebaseFirestore.instance.collection('Users')
+        .where('email', isEqualTo: email)
+        .limit(1)
+        .get();
 
-    if (userDoc.exists) {
+    if (!userDoc.docs.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username already exists!')),
+        const SnackBar(content: Text('User already exists!')),
       );
     } else {
-      await FirebaseFirestore.instance.collection('Users').doc(username).set({
-        'user_id': username,
-        'name': name,
+      final newUserRef = FirebaseFirestore.instance.collection('Users').doc(); // Auto-generated ID
+      await newUserRef.set({
+        'user_id': newUserRef.id,      // Save the auto-generated ID as user_id
+        'name': username,
+        'email': email,                // Include the email
       });
 
       // Show success message
@@ -215,6 +306,30 @@ class _SignupPageState extends State<SignupPage> {
                     ),
                   ),
                   child: const Text('Sign Up', style: TextStyle(fontSize: 16)), // Smaller font size
+                ),
+
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final success = await _signInWithGoogle();
+                    if (success) {
+                      _navigateToMapScreen(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Failed to sign in with Google.')),
+                      );
+                    }
+                  },
+                  icon: Image.asset('assets/images/google_logo.png', height: 20), // or use an icon
+                  label: const Text('Sign in with Google'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size(200, 40),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(color: Colors.grey),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 RichText(
