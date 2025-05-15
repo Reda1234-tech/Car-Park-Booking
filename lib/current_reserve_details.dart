@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:firebase_core/firebase_core.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+import 'firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'main.dart';
+import 'book.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: CurrentReservePage(
-        bookingID: "asddsddxvcv",
-        slotName: 'ب-2',
-        reservedTime: DateTime(2025, 2, 2, 15, 0),
-        duration: {'hour': 2, 'min': 0},
-      ),
-    );
-  }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(ChangeNotifierProvider(
+      create: (context) => ParkingProvider(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: CurrentReservePage(
+          bookingID: "asddsddxvcv",
+          slotName: 'ب-2',
+          reservedTime: DateTime(2025, 2, 3, 15, 0),
+          duration: {'hour': 2, 'min': 0},
+        ),
+      )));
 }
 
 class CurrentReservePage extends StatefulWidget {
@@ -43,27 +46,31 @@ class CurrentReservePage extends StatefulWidget {
 class _CurrentReservePageState extends State<CurrentReservePage> {
   Duration remainingTime = Duration.zero;
   Timer? _timer;
-  bool _isTimerRunning = true;
+  bool _isTimerRunning = false;
   bool _isExpired = false;
 
   @override
   void initState() {
     super.initState();
     _calculateRemainingTime();
-    if (!_isExpired) {
-      _startTimer();
-    }
+    // if (!_isExpired) {
+    //   _startTimer();
+    // }
   }
 
   void _calculateRemainingTime() {
     DateTime now = DateTime.now();
-    DateTime endTime = widget.reservedTime.add(Duration(
-        hours: widget.duration['hour']!, minutes: widget.duration['min']!));
+    DateTime startTime = widget.reservedTime;
+    DateTime endTime = startTime.add(Duration(
+      hours: widget.duration['hour']!,
+      minutes: widget.duration['min']!,
+    ));
 
-    if (now.isBefore(widget.reservedTime)) {
+    if (now.isBefore(startTime)) {
       // Booking hasn't started yet
-      remainingTime = widget.reservedTime.difference(now);
+      remainingTime = startTime.difference(now);
       _isTimerRunning = false;
+      _waitForStartTime();
     } else if (now.isAfter(endTime)) {
       // Booking time has expired
       remainingTime = Duration.zero;
@@ -72,7 +79,23 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
     } else {
       // Booking is ongoing
       remainingTime = endTime.difference(now);
+      _startTimer(); // Start countdown
     }
+  }
+
+  void _waitForStartTime() {
+    Timer(Duration(seconds: remainingTime.inSeconds), () {
+      if (mounted) {
+        setState(() {
+          _isTimerRunning = true;
+          remainingTime = Duration(
+            hours: widget.duration['hour']!,
+            minutes: widget.duration['min']!,
+          );
+          _startTimer();
+        });
+      }
+    });
   }
 
   void _startTimer() {
@@ -89,21 +112,95 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
     });
   }
 
-  void _stopTimer() {
-    setState(() {
-      _timer?.cancel();
-      _isTimerRunning = false;
-    });
+  void _showDeleteConfirm(String bookingID) {
+    final parkingProvider =
+        Provider.of<ParkingProvider>(context, listen: false);
 
-    // remove from db
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Confirm Deletion"),
+            content: Text("Are you sure you want to delete this item?"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("No"),
+              ),
+              TextButton(
+                onPressed: () {
+                  parkingProvider.deleteBooking(bookingID);
+                  setState(() {
+                    _timer?.cancel();
+                    _isTimerRunning = false;
+                  });
+                  Navigator.of(context).pop();
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ParkingSlotsScreen(
+                              bookDate: widget.reservedTime,
+                              bookDuration: widget.duration,
+                            )),
+                  );
+                },
+                child: Text("Yes"),
+              ),
+            ],
+          );
+        });
   }
 
   String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = twoDigits(duration.inHours);
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return '$hours:$minutes:$seconds';
+    int days = duration.inDays;
+    int hours = duration.inHours.remainder(24);
+    int minutes = duration.inMinutes.remainder(60);
+    int seconds = duration.inSeconds.remainder(60);
+
+    String formattedTime = '';
+
+    if (days > 0) {
+      formattedTime += '$days d, ';
+    }
+    if (hours > 0 || days > 0) {
+      formattedTime += '$hours h, ';
+    }
+    formattedTime += '$minutes m, $seconds s';
+
+    return formattedTime;
+  }
+
+  Future<bool> _checkForBookingConflict(
+      String currentBookingID, DateTime newEndTime) async {
+    final parkingProvider =
+        Provider.of<ParkingProvider>(context, listen: false);
+
+    List<Map<String, dynamic>> existingBookings =
+        await parkingProvider.fetchBookings(parkingProvider.parkID);
+
+    for (var booking in existingBookings) {
+      if (currentBookingID == booking['id'])
+        print(booking['booking_details'].date);
+      if (widget.slotName == booking['booking_details'].slotNumber &&
+          currentBookingID != booking['id']) {
+        DateTime bookedStartTime = booking['booking_details'].date;
+        DateTime bookedEndTime = bookedStartTime.add(Duration(
+          hours: booking['booking_details'].duration['hour'],
+          minutes: booking['booking_details'].duration['min'],
+        ));
+
+        print('yes ${bookedStartTime} ${newEndTime} ${bookedEndTime}');
+        print(currentBookingID);
+        print(booking['id']);
+        if (currentBookingID != booking['id'] &&
+            newEndTime.isAfter(bookedStartTime)) {
+          return true; // Conflict found
+        }
+      }
+    }
+    return false; // No conflict
   }
 
   void _extendTimer() {
@@ -161,17 +258,42 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
             ),
             TextButton(
               child: Text('Extend'),
-              onPressed: () {
-                setState(() {
-                  // Add the additional hours and minutes to the remaining time
-                  remainingTime = remainingTime +
-                      Duration(
-                          hours: additionalHours, minutes: additionalMinutes);
-                  if (!_isTimerRunning) {
-                    _startTimer(); // Restart the timer if it was stopped
+              onPressed: () async {
+                final parkingProvider =
+                    Provider.of<ParkingProvider>(context, listen: false);
+
+                DateTime newEndTime = widget.reservedTime
+                    .add(Duration(
+                        hours: widget.duration['hour']!,
+                        minutes: widget.duration['min']!))
+                    .add(Duration(
+                        hours: additionalHours, minutes: additionalMinutes));
+                try {
+                  bool hasConflict = await _checkForBookingConflict(
+                      widget.bookingID, newEndTime);
+                  if (hasConflict) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Time conflict! Cannot extend. Please, choose less time')),
+                    );
+                  } else {
+                    setState(() {
+                      widget.duration['hour'] =
+                          widget.duration['hour']! + additionalHours;
+                      widget.duration['min'] =
+                          widget.duration['min']! + additionalMinutes;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Reservation Extended.')),
+                    );
+                    Navigator.of(context).pop();
+                    parkingProvider.extendBookingDuration(
+                        widget.bookingID, additionalHours, additionalMinutes);
                   }
-                });
-                Navigator.of(context).pop(); // Close the dialog
+                } catch (e) {
+                  print('error ${e}');
+                }
               },
             ),
           ],
@@ -244,7 +366,11 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
                       width: 200,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _isTimerRunning ? _stopTimer : null,
+                        onPressed: _isExpired
+                            ? null
+                            : () {
+                                _showDeleteConfirm(widget.bookingID);
+                              },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Color.fromRGBO(103, 83, 164, 1)),
                         child: Text('Cancel',
@@ -254,8 +380,8 @@ class _CurrentReservePageState extends State<CurrentReservePage> {
                     ),
                     SizedBox(height: 15),
                     SizedBox(
-                      width: 200, // Fixed width for both buttons
-                      height: 50, // Fixed height for both buttons
+                      width: 200,
+                      height: 50,
                       child: ElevatedButton(
                         onPressed: _extendTimer,
                         style: ElevatedButton.styleFrom(

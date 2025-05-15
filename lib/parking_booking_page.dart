@@ -132,7 +132,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
               SizedBox(height: 8),
 
               // Date selection
-              Text("Select date",
+              Text("Start Date",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               GestureDetector(
