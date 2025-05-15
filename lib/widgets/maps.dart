@@ -70,6 +70,14 @@ const kGoogleApiKey = "AIzaSyAIb-HJSutTY63dIxqAVYZ9dAl6fE-BsQA";
 
 // GoogleMapsPlaces _places = GoogleMapsPlaces(apiKey: kGoogleApiKey);
 
+void navigateToMapScreen(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+        builder: (context) => MapScreen()), // Navigate to MapScreen
+  );
+}
+
 class ParkingApp extends StatelessWidget {
   const ParkingApp({super.key});
 

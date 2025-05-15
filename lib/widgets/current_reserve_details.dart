@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
-import '../untils/firebase_options.dart';
+import '../utils/firebase_options.dart';
 import 'package:provider/provider.dart';
 import 'book.dart';
 import '../provider/parking_provider.dart';

@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'widgets/maps.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'untils/firebase_options.dart';
+import 'utils/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

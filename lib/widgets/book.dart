@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import '../untils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
+import '../utils/firebase_options.dart'; // Ensure this file is generated using `flutterfire configure`
 import 'current_reserve_details.dart';
 
 import '../provider/parking_provider.dart';
