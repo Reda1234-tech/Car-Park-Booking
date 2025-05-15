@@ -2,9 +2,11 @@ import 'package:car_park_booking/maps.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'book.dart';
-import 'main.dart';
+
 import 'package:flutter/services.dart';
+import './book.dart';
+import 'main.dart';
+
 
 // import 'package:gif/gif.dart';
 
@@ -112,12 +114,69 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
     }
   }
 
+
+  void _showBookingDetails(BuildContext context) {
+    int selectedHours = int.tryParse(hourController.text) ?? 0;
+    int selectedMinutes = int.tryParse(minuteController.text) ?? 0;
+    String formattedDuration = '$selectedHours hours $selectedMinutes minutes';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Slot Booked'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image.asset('assets/images/image.gif', height: 120, width: 120
+                  // Gif(
+                  // image: AssetImage(
+                  //   "images/img.gif",
+                  // ),
+
+                  ),
+              SizedBox(height: 16),
+              Text('Duration: $formattedDuration'),
+              SizedBox(height: 16),
+              // Display an animated GIF for the parking slot
+
+              // SizedBox(height: 8),
+              // Text('Slot: ${widget.targetSlot.id}'),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                // Navigator.of(context).pop();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ParkingSlotsScreen(
+                              bookDate: selectedDate,
+                              bookDuration: {
+                                'hour': selectedHours,
+                                'min': selectedMinutes
+                              })),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+
         title: Text(
             'Book Parking Details for ${Provider.of<ParkingProvider>(context).parkID}'),
+
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -155,6 +214,7 @@ class _ParkingBookingPageState extends State<ParkingBookingPage> {
               SizedBox(height: 16),
 
               // Start time selection
+
               Text("Start Time",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
