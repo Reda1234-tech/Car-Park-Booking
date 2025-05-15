@@ -5,6 +5,7 @@ import 'maps.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart';
+import 'registration.dart';
 
 class SplashPage extends StatelessWidget {
   @override
@@ -18,7 +19,7 @@ class SplashPage extends StatelessWidget {
     Future.delayed(Duration(seconds: 3), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => MapScreen()),
+        MaterialPageRoute(builder: (context) => LoginPage()),
       );
     });
 
@@ -328,7 +329,9 @@ void main() async {
       create: (context) => ParkingProvider(),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: SplashPage(), // Set SplashPage as the initial screen
+        home: SplashPage(),
+
+        // Set SplashPage as the initial screen
       ),
     ),
   );
