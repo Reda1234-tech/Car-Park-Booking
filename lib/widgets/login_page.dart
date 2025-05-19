@@ -37,18 +37,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _signIn() async {
-    String username = _usernameController.text.trim();
+    String email = _emailController.text.trim();
 
     var userDoc = await FirebaseFirestore.instance
         .collection('Users')
-        .doc(username)
+        .where('email', isEqualTo: email)
+        .limit(1)
         .get();
 
-    if (userDoc.exists) {
+    if (userDoc.docs.isNotEmpty) {
       // Navigate to MapScreen
       navigateToMapScreen(context);
     } else {
@@ -74,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                 const Text('Welcome back! Login to continue.',
                     textAlign: TextAlign.center),
                 const SizedBox(height: 20),
-                _buildUsernameField(),
+                _buildEmailField(),
                 const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
@@ -152,23 +153,23 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildUsernameField() {
+  Widget _buildEmailField() {
     return TextFormField(
-      controller: _usernameController,
+      controller: _emailController,
       decoration: InputDecoration(
-        labelText: 'Username',
+        labelText: 'Email',
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10), // Circular border
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Username is required';
-        if (value.length < 4 || value.length > 15)
-          return 'Username must be 4-15 characters';
-        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
-            .hasMatch(value)) {
-          return 'Must include letters and numbers';
-        }
+        // if (value == null || value.isEmpty) return 'Email is required';
+        // if (value.length < 4 || value.length > 15)
+        //   return 'Email must be 4-15 characters';
+        // if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
+        //     .hasMatch(value)) {
+        //   return 'Must include letters and numbers';
+        // }
         return null;
       },
     );

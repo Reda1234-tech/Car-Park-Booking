@@ -1,13 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:provider/provider.dart';
-import '../widgets/maps.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../utils/firebase_options.dart';
-import '../widgets/signup_page.dart';
 
-import '../provider/parking_provider.dart';
 import '../model/park_booking.dart';
 import '../model/park_slot.dart';
 

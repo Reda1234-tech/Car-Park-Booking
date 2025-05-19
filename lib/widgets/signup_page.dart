@@ -38,12 +38,12 @@ class SignupPage extends StatefulWidget {
 
 class _SignupPageState extends State<SignupPage> {
   final _usernameController = TextEditingController();
-  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   Future<void> _signUp() async {
     String username = _usernameController.text.trim();
-    String email = _nameController.text.trim();
+    String email = _emailController.text.trim();
 
     var userDoc = await FirebaseFirestore.instance
         .collection('Users')
@@ -91,7 +91,7 @@ class _SignupPageState extends State<SignupPage> {
                 const Text('Sign up to use Easy Parking.',
                     textAlign: TextAlign.center),
                 const SizedBox(height: 20),
-                _buildTextField(controller: _nameController, label: 'Name'),
+                _buildTextField(controller: _emailController, label: 'Email'),
                 const SizedBox(height: 10),
                 _buildUsernameField(),
                 const SizedBox(height: 20),
@@ -176,13 +176,13 @@ class _SignupPageState extends State<SignupPage> {
         ),
       ),
       validator: (value) {
-        if (value == null || value.isEmpty) return 'Username is required';
-        if (value.length < 4 || value.length > 15)
-          return 'Username must be 4-15 characters';
-        if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
-            .hasMatch(value)) {
-          return 'Must include letters and numbers';
-        }
+        // if (value == null || value.isEmpty) return 'Username is required';
+        // if (value.length < 4 || value.length > 15)
+        //   return 'Username must be 4-15 characters';
+        // if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{4,15}$')
+        //     .hasMatch(value)) {
+        //   return 'Must include letters and numbers';
+        // }
         return null;
       },
     );
