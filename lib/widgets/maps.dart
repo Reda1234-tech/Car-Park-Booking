@@ -10,6 +10,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../provider/parking_provider.dart';
 import '../model/park_slot.dart';
 
+import '../notifications/notification_service.dart';
+
 // import 'package:geocoding/geocoding.dart';
 // import 'package:flutter_google_places/flutter_google_places.dart';
 // import 'package:google_maps_webservice/places.dart';
@@ -76,6 +78,16 @@ void navigateToMapScreen(BuildContext context) {
     MaterialPageRoute(
         builder: (context) => MapScreen()), // Navigate to MapScreen
   );
+}
+
+void _showTestNotification() {
+  NotificationService().showNotification(
+    id: 0,
+    title: 'Test Notification',
+    body: 'This is a local notification',
+  );
+
+  print("notification called!");
 }
 
 class ParkingApp extends StatelessWidget {
@@ -248,32 +260,37 @@ class _MapScreenState extends State<MapScreen> {
             // width: 500,
             child: Stack(
               children: [
-                Container(
-                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                  child: Consumer(builder: (context, provider, child) {
-                    return Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                        Radius.circular(50),
-                      )),
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target:
-                              LatLng(_latitude, _longitude), // Center of campus
-                          zoom: 15,
-                        ),
-                        buildingsEnabled: true,
-                        compassEnabled: true,
-                        mapType: MapType.hybrid,
-                        markers: markers,
-                        onMapCreated: (GoogleMapController controller) {
-                          _controller = controller;
-                        },
-                        myLocationButtonEnabled: true,
-                      ),
-                    );
-                  }),
+                ElevatedButton(
+                  onPressed: _showTestNotification,
+                  child: const Text('Show Notification'),
                 ),
+
+                // Container(
+                //     padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                //     child: Consumer(builder: (context, provider, child) {
+                //       return Container(
+                //         decoration: BoxDecoration(
+                //             borderRadius: BorderRadius.all(
+                //           Radius.circular(50),
+                //         )),
+                //         child: GoogleMap(
+                //           initialCameraPosition: CameraPosition(
+                //             target:
+                //                 LatLng(_latitude, _longitude), // Center of campus
+                //             zoom: 15,
+                //           ),
+                //           buildingsEnabled: true,
+                //           compassEnabled: true,
+                //           mapType: MapType.hybrid,
+                //           markers: markers,
+                //           onMapCreated: (GoogleMapController controller) {
+                //             _controller = controller;
+                //           },
+                //           myLocationButtonEnabled: true,
+                //         ),
+                //       );
+                //     }),
+                //   ),
               ],
             ),
           ),
